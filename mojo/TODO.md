@@ -1,0 +1,3 @@
+- automate writing to results file
+- create better graph implementations
+- reach step 7
