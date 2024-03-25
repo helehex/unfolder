@@ -1,3 +1,5 @@
+Tested on Mojo 24.1.1
+
 # Unfolders
 - Unfolders generate new graphs by following all possible walks, starting from a given node, in an existing graph
 - To generate an unfolder graph, you can input an origin history: ex. {1, 1, 2, 1, 5, 3}

@@ -63,6 +63,7 @@ struct Graph(Stringable):
     owned edges: Table[Int], 
     owned weights: Array[Int], 
     owned _xy_id: Array[Ind2]):
+    
         #--- initialize with node and edge data, then compute bounds and labels
         
         # set knowns
@@ -82,7 +83,7 @@ struct Graph(Stringable):
 
         # find edge_start and edge_limit for each nodes edge row, and count edges
         for y in range(self.node_count):
-            let row = Row(self.edges,y)
+            var row = Row(self.edges,y)
             var start: Int = self.node_count
             var limit: Int = 0
             var edge_out: Int = 0

@@ -32,11 +32,11 @@ fn main():
 #------ array test ------#
 #
 fn array_test():
-    let array_none: Array[Int] = Array[Int]()
-    let array_zero: Array[Int] = Array[Int](0)
+    var array_none: Array[Int] = Array[Int]()
+    var array_zero: Array[Int] = Array[Int](0)
     var array_empty: Array[Int] = Array[Int](10)
-    let array_splat: Array[Int] = Array[Int](6,73)
-    let row_ind: Array[Ind2] = Array[Ind2](6,Ind2(7,8))
+    var array_splat: Array[Int] = Array[Int](6,73)
+    var row_ind: Array[Ind2] = Array[Ind2](6,Ind2(7,8))
     
     # append 1, then 2, to array_empty
     array_empty = Array[Int](array_empty,1)
@@ -54,12 +54,12 @@ fn array_test():
 #------ table test ------#
 #
 fn table_test():
-    let table_none: Table[Int] = Table[Int]()
-    let table_zero: Table[Int] = Table[Int](0,0)
-    let table_cols: Table[Int] = Table[Int](6,0)
-    let table_rows: Table[Int] = Table[Int](0,4)
-    let table_empty: Table[Int] = Table[Int](5, 3)
-    let table_splat: Table[Int] = Table[Int](2,2,5)
+    var table_none: Table[Int] = Table[Int]()
+    var table_zero: Table[Int] = Table[Int](0,0)
+    var table_cols: Table[Int] = Table[Int](6,0)
+    var table_rows: Table[Int] = Table[Int](0,4)
+    var table_empty: Table[Int] = Table[Int](5, 3)
+    var table_splat: Table[Int] = Table[Int](2,2,5)
 
     print("Table[Int]():\n" + str_(table_none), "\n")
     print("Table[Int](0, 0):\n" + str_(table_zero), "\n")
@@ -68,7 +68,7 @@ fn table_test():
     print("Table[Int](cols=5, rows=3):\n" + str_(table_empty), "\n")
     print("Table[Int](cols=2, rows=2, splat=5):\n" + str_(table_splat), "\n")
     
-    let table: Table[Int] = Table[Int](8,7,1) # create a new table, with 8 columns and 7 rows. populate with 1's
+    var table: Table[Int] = Table[Int](8,7,1) # create a new table, with 8 columns and 7 rows. populate with 1's
     Row(table, 2).splat(3)
     print("Create a new table, with 8 columns and 7 rows. populate with 1's, and splat a row of 3's:\n" + str_(table), "\n")
     
@@ -84,7 +84,7 @@ fn table_test():
     array = Array[Int](12, array)
     print("Array from row 5 of table 2, index 0 was set, then the size was modified:\n" + str_(array), "\n")
 
-    let row: Row[Int] = Row[Int](table2,5)
+    var row: Row[Int] = Row[Int](table2,5)
     row[0] = 301
     print("Row from row 5 of table 2, index 0 was set:\n" + str_(row), "\n")
 

@@ -5,7 +5,7 @@ Example: `follow[unfold]()`
 """
 
 from math import min, max
-from collections.vector import DynamicVector as List
+from collections.vector import DynamicVector
 from utils.index import StaticIntTuple as Ind
 from array import Array
 from table import Table, Row
@@ -43,7 +43,7 @@ fn follow[rule: fn(Graph,Int)->Graph](history: Array[Int]) -> Graph:
 #---
 fn unfold(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph with respect to an origin node
     
-    let width: Int = seed.node_count # width of the resulting graph = node count of this graph
+    var width: Int = seed.node_count # width of the resulting graph = node count of this graph
     
     # if the seed graph is empty or does not contain origin, give the single (implicit) self-loop. (step 1)
     if width <= 0 or width < origin or origin < 1:
@@ -62,8 +62,8 @@ fn unfold(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph with
     var edge_count: Int = 0
     
     # estimate size of resulting graph
-    let depth_est: Int = width + 1          #? edge estimate~ < seed edge_count * 3
-    let node_est: Int = width * depth_est   #? node estimate~ < seed count * 3
+    var depth_est: Int = width + 1          #? edge estimate~ < seed edge_count * 3
+    var node_est: Int = width * depth_est   #? node estimate~ < seed count * 3
     
     # create new containers for the resulting graph
     var nodes: Table[Int] = Table[Int](width, depth_est)
@@ -84,7 +84,7 @@ fn unfold(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph with
     #--- when a node with at least one child which doesnt loop is reached, that childs index will be pushed onto the trace, and used to set the indexed mask true
     #--- when a node is reached where every child forms a loop, it's index will be popped from the trace, and used to set the indexed mask false
     #---
-    var trace: List[Int] = List[Int](width)
+    var trace: DynamicVector[Int] = DynamicVector[Int](capacity=width)
     var mask: Array[Int] = Array[Int](width)  # mask contains the depth the trace was at when the index was pushed, +1. if it has not been reached, 0.
     var edge_start: Int = 0                   # the edge to start looping at
     var edge_limit: Int = 0                   # the edge to stop looping at
@@ -92,14 +92,14 @@ fn unfold(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph with
     
     @parameter #--- the walk did not touch itself, try adding the reached node
     fn _reach():
-        let p_: Ind2 = Ind2(o_, depth - 1)
-        let _p: Ind2 = Ind2(_o, depth)
+        var p_: Ind2 = Ind2(o_, depth - 1)
+        var _p: Ind2 = Ind2(_o, depth)
         if nodes[_p] == 0:
             _xy_id[node_count] = _p
             node_count += 1
             nodes[_p] = node_count
-        let i_: Int = nodes[p_] - 1
-        let _i: Int = nodes[_p] - 1
+        var i_: Int = nodes[p_] - 1
+        var _i: Int = nodes[_p] - 1
         weights[_i] += 1
         edges[Ind2(_i,i_)] += 1
         edges[Ind2(i_,_i)] += 1
@@ -187,7 +187,7 @@ fn unfold(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph with
 #---
 fn unfold_loop(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph with respect to an origin node
     
-    let width: Int = seed.node_count # width of the resulting graph = node count of this graph
+    var width: Int = seed.node_count # width of the resulting graph = node count of this graph
     
     # if the seed graph is empty or does not contain origin, give the single (implicit) self-loop. (step 1)
     if width <= 0 or width < origin or origin < 1:
@@ -206,8 +206,8 @@ fn unfold_loop(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph
     var edge_count: Int = 0
     
     # estimate size of resulting graph
-    let depth_est: Int = width + 1          #? edge estimate~ < seed edge_count * 3
-    let node_est: Int = width * depth_est   #? node estimate~ < seed count * 3
+    var depth_est: Int = width + 1          #? edge estimate~ < seed edge_count * 3
+    var node_est: Int = width * depth_est   #? node estimate~ < seed count * 3
     
     # create new containers for the resulting graph
     var nodes: Table[Int] = Table[Int](width, depth_est)
@@ -228,7 +228,7 @@ fn unfold_loop(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph
     #--- when a node with at least one child which doesnt loop is reached, that childs index will be pushed onto the trace, and used to set the indexed mask true
     #--- when a node is reached where every child forms a loop, it's index will be popped from the trace, and used to set the indexed mask false
     #---
-    var trace: List[Int] = List[Int](width)
+    var trace: DynamicVector[Int] = DynamicVector[Int](capacity=width)
     var mask: Array[Int] = Array[Int](width)  # mask contains the depth the trace was at when the index was pushed, +1. if it has not been reached, 0.
     var edge_start: Int = 0                   # the edge to start looping at
     var edge_limit: Int = 0                   # the edge to stop looping at
@@ -236,22 +236,22 @@ fn unfold_loop(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph
     
     @parameter
     fn _reach(): # the walk did not touch itself, try adding the reached node
-        let p_: Ind2 = Ind2(o_, depth - 1)
-        let _p: Ind2 = Ind2(_o, depth)
+        var p_: Ind2 = Ind2(o_, depth - 1)
+        var _p: Ind2 = Ind2(_o, depth)
         if nodes[_p] == 0:
             _xy_id[node_count] = _p
             node_count += 1
             nodes[_p] = node_count
-        let i_: Int = nodes[p_] - 1
-        let _i: Int = nodes[_p] - 1
+        var i_: Int = nodes[p_] - 1
+        var _i: Int = nodes[_p] - 1
         weights[_i] += 1
         edges[Ind2(_i,i_)] += 1
 
     @parameter #--- the check has completed a loop, add a previously unrealized node
     fn _touch():
         _reach()
-        let t_: Int = nodes[Ind2(_o, depth)] - 1
-        let _t: Int = nodes[Ind2(_o, mask[_o] - 1)] - 1
+        var t_: Int = nodes[Ind2(_o, depth)] - 1
+        var _t: Int = nodes[Ind2(_o, mask[_o] - 1)] - 1
         edges[Ind2(_t,t_)] += 1
 
     @parameter #--- check for continuation

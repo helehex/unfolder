@@ -46,7 +46,7 @@ fn print_(o: Array[Ind[2]]): print(str_(o))
 # pad aligns each column
 #
 fn str_(o: Table[Int]) -> String:
-    let room = len(String(reduce_max(o)))
+    var room = len(String(reduce_max(o)))
     var s: String = ""
     for y in range(o._rows - 1): s += str_(Row(o,y), room) + "\n"
     if o._rows > 0: s += str_(Row(o, o._rows - 1), room)

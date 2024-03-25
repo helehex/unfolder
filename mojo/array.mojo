@@ -65,7 +65,7 @@ struct Array[T: AnyRegType](Sized):
         
     @always_inline
     fn __init__(inout self, owned array: Self, append: T):
-        let size = array._size + 1
+        var size = array._size + 1
         self._size = size
         self._rc = Pointer[Int].alloc(1)
         self._data = Pointer[T].alloc(size) # self.size = array.size + 1
@@ -84,7 +84,7 @@ struct Array[T: AnyRegType](Sized):
     
     @always_inline
     fn __del__(owned self):
-        let rc = self._rc.load() - 1
+        var rc = self._rc.load() - 1
         if rc < 0:
             self._rc.free()
             self._data.free()
@@ -107,7 +107,7 @@ struct Array[T: AnyRegType](Sized):
     
     @always_inline
     fn copy(self, array: Self):
-        let i: Int = min(self._size, array._size)
+        var i: Int = min(self._size, array._size)
         #debug_assert(i < 0 or i > self._size, "OUT OF BOUNDS (copy array)")
         memcpy(self._data, array._data, i)
     
@@ -117,7 +117,7 @@ struct Array[T: AnyRegType](Sized):
     
     @always_inline
     fn clear(self, start: Int, end: Int):
-        let count: Int = max(0, start - end)
+        var count: Int = max(0, start - end)
         #debug_assert(count >= self._size, "OUT OF BOUNDS (clear range)")
         memset_zero(self._data.offset(start), count) # clears index >= i_, and < _i
     

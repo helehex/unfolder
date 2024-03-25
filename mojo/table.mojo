@@ -26,7 +26,7 @@ struct Table[T: AnyRegType]:
     
     @always_inline
     fn __init__(inout self, cols: Int, rows: Int):
-        let size = cols*rows
+        var size = cols*rows
         (self._size, self._cols, self._rows) = (size, cols, rows)
         self._rc = Pointer[Int].alloc(1)
         self._data = Pointer[T].alloc(size)
@@ -35,7 +35,7 @@ struct Table[T: AnyRegType]:
         
     @always_inline
     fn __init__(inout self, cols: Int, rows: Int, splat: T):
-        let size = cols*rows
+        var size = cols*rows
         (self._size, self._cols, self._rows) = (size, cols, rows)
         self._rc = Pointer[Int].alloc(1)
         self._data = Pointer[T].alloc(size)
@@ -52,7 +52,7 @@ struct Table[T: AnyRegType]:
     
     @always_inline
     fn __init__(inout self, cols: Int, rows: Int, owned table: Table[T]):
-        let size = cols*rows
+        var size = cols*rows
         (self._size, self._cols, self._rows) = (size, cols, rows)
         self._rc = Pointer[Int].alloc(1)
         self._data = Pointer[T].alloc(size)
@@ -76,7 +76,7 @@ struct Table[T: AnyRegType]:
     
     @always_inline
     fn __del__(owned self):
-        let rc = self._rc.load() - 1
+        var rc = self._rc.load() - 1
         if rc < 0:
             self._rc.free()
             self._data.free()
@@ -90,13 +90,13 @@ struct Table[T: AnyRegType]:
     
     @always_inline
     fn __getitem__(self, index: Ind[2]) -> T:
-        let i: Int = self.int_ind(index)
+        var i: Int = self.int_ind(index)
         #debug_assert(i < 0 or i >= self._size, "OUT OF BOUNDS (get index table)")
         return self._data.load(i)
 
     @always_inline
     fn __setitem__(self, index: Ind[2], o: T):
-        let i: Int = self.int_ind(index)
+        var i: Int = self.int_ind(index)
         #debug_assert(i < 0 or i >= self._size, "OUT OF BOUNDS (set index)")
         self._data.store(i, o)
     
@@ -109,7 +109,7 @@ struct Table[T: AnyRegType]:
         if self._cols == table._cols and self._rows == table._rows:
             memcpy(self._data, table._data, self._size)
         else:
-            let rows = min(self._rows, table._rows)
+            var rows = min(self._rows, table._rows)
             for y in range(rows):
                 #debug_assert(y < 0 or y >= self._rows, "OUT OF BOUNDS (copy rows y)")
                 Row(self, y).copy(Row(table, y))
@@ -163,7 +163,7 @@ struct Row[T: AnyRegType]:
     
     @always_inline
     fn copy(self, row: Self):
-        let x: Int = min(self._cols, row._cols)
+        var x: Int = min(self._cols, row._cols)
         #debug_assert(x < 0 or x > self._table._cols, "OUT OF BOUNDS (copy row x)")
         memcpy(self._data, row._data, x)
     
@@ -173,7 +173,7 @@ struct Row[T: AnyRegType]:
     
     @always_inline
     fn clear(self, o_: Int, _o: Int):
-        let c: Int = max(0, _o - o_)
+        var c: Int = max(0, _o - o_)
         #debug_assert(c < 0 or c > self._table._cols, "OUT OF BOUNDS (clear row, !count)")
         #debug_assert(o_ < 0 or o_ > self._table._cols, "OUT OF BOUNDS (clear row, !o_)")
         memset_zero(self._data.offset(o_), c) # clears index >= o_, and < _o
@@ -187,7 +187,7 @@ struct Row[T: AnyRegType]:
         var array: Array[T] = Array[T]()
         array._size = self._cols
         array._data = Pointer[T].alloc(self._cols)
-        let i: Int = min(array._size, self._cols)
+        var i: Int = min(array._size, self._cols)
         memcpy(array._data, self._data, i)
         return array
 
