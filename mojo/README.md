@@ -5,6 +5,9 @@ Tested on Mojo 24.1.1
 - To generate an unfolder graph, you can input an origin history: ex. {1, 1, 2, 1, 5, 3}
 - See `main.mojo` for an example of following an origin history
 
+Example command: `mojo mojo/unfold.mojo 1-1-1-2`
+
+Adding `-s` will print just the meta data of the resulting graph
 
 # Variants:
 
