@@ -1,6 +1,6 @@
 from sys import argv
 from utils.index import StaticIntTuple as Ind
-from array import Array, atol_array
+from array import Array, eval_array
 from table import Table, Row
 from graph import Graph
 from hio import print_, str_
@@ -15,16 +15,22 @@ alias Ind2 = Ind[2]
 fn main():
 
     var args = argv()
+
     var history = Array[Int](1)
+    var summary: Bool = False
 
-    if len(args) > 1:
-        try:
-            history = atol_array(args[1])
-        except e:
-            history = Array[Int](1)
-            print("error: ", e)
+    for i in range(1, len(args)):
+        if args[i] == "-s": summary = True
+        elif args[i][0] != "-":
+            try:
+                history = eval_array(args[i])
+            except e:
+                history = Array[Int](1)
+                print("error: ", e)
 
-    print(rules.follow[rules.unfold](history))
+    var result = rules.follow[rules.unfold](history)
+    if summary: print(result.info_to_string())
+    else: print(result)
 
 
 

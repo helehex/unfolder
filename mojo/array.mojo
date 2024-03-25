@@ -128,7 +128,7 @@ struct Array[T: AnyRegType](Sized):
 
 #------ Parse Int Array ------#
 #
-fn atol_array(s: String) raises -> Array[Int]:
+fn eval_array(s: String) raises -> Array[Int]:
     var cleaned: String = s
     cleaned = cleaned.replace("[", "")
     cleaned = cleaned.replace("]", "")
