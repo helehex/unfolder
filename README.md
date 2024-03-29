@@ -1,7 +1,7 @@
 # unfolder
 Graph crawling automata.
 
-> Graph with history `1-2-2-2-2-2`, aka. `1A5B`, and a highlighted sub-region
+> Graph with history `1-1-2-2-2-2`, aka. `2A-4B`, and a highlighted sub-region
 ![Image of a step 6 variant](/res/images/graphstuffi.png)
 
 ### The main focus of this repo is the following graph update rule:
