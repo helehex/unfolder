@@ -1,8 +1,8 @@
 from math import min, max
 from utils.index import StaticIntTuple as Ind
-from array import Array
-from table import Table, Row
-from hio import str_
+from ..collections.array import *
+from ..collections.table import *
+from ..io import str_
 
 alias Ind2 = Ind[2]
 
@@ -11,7 +11,7 @@ alias Ind2 = Ind[2]
 
 #------------ node-edge Graph
 #---
-#------ uses a sparse optimized edge matrix/table
+#------ uses a sparse optimized edge matrix
 #------ the unfolder uses the bounds property to sparse optimize the crawl
 #------ edge table's memory layout is not currently optimized sparsely
 #------ mostly just a container (without much interface currently) which the unfolder uses
@@ -75,11 +75,11 @@ struct Graph(Stringable):
         self.history = history
         self.nodes = nodes
         self.edges = edges
-        self.bounds = Array[Ind2](self.node_count)
+        self.bounds = Array[Ind2](size = self.node_count)
         self.weights = weights
         self._xy_id = _xy_id
-        self._lb_id = Array[Int](self.node_count)
-        self._id_lb = Array[Int](self.node_count + 1)
+        self._lb_id = Array[Int](size = self.node_count)
+        self._id_lb = Array[Int](size = self.node_count + 1)
 
         # find edge_start and edge_limit for each nodes edge row, and count edges
         for y in range(self.node_count):
@@ -155,7 +155,7 @@ struct Graph(Stringable):
         s += "weights: " + str_(self.weights) + "\n\n"
         s += "edges: (count: " + str(self.edge_count) + ", max_out: " + str(self.max_edge_out) + ")\n" + str_(self.edges) + "\n"
         s += "bounds: " + str_(self.bounds) + "\n\n"
-        s += "id to xy: " + str_(self._xy_id) + "\n" # not infering parameter? is this expected?
+        s += "id to xy: " + str_(self._xy_id) + "\n"
         s += "id to lb: " + str_(self._lb_id) + "\n"
         s += "lb to id: " + str_(self._id_lb) + "\n"
         return s

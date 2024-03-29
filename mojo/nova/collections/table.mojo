@@ -1,9 +1,6 @@
-from math import max, min
 from math.limit import min_finite
-from memory.unsafe import Pointer
-from memory import memset_zero, memcpy
+from math import min, max
 from utils.index import StaticIntTuple as Ind
-from array import Array
 
 
 

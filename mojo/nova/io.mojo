@@ -1,22 +1,19 @@
 from utils.index import StaticIntTuple as Ind
-from array import Array
-from table import Table, Row, reduce_max
-from graph import Graph
+from .collections import *
+from .graph.graph import Graph
 
 fn say_the_thing(): print("hio world")
 
 from utils.variant import Variant
 
 
-# #------ Array[Stringable] to String
-# #
-# fn str_[T: Stringable](o: Array[T]) -> String:
-#     var s: String = "["
-#     for x in range(o._size - 1): s += String(o[x]) + ", "
-#     if o._size > 0: s += String(o[o._size - 1])
-#     s += "]"
-#     return s
-# fn print_[T: AnyType](o: Array[T]): print(str_(o))
+#------ SmallVector[Int] to String ------#
+#
+fn str_(value: SmallVector[Int]) -> String:
+    var result: String = ""
+    var end: Int = len(value) - 1
+    for i in range(end): result += str(value[i]) + "\n"
+    return result + str(value[end])
 
 
 #------ Array[Int] to String
@@ -75,3 +72,36 @@ fn str_(o: Row[Int], pad: Int) -> String:
     return s
 fn str_(o: Row[Int]) -> String: return str_(o, len(String(reduce_max(o))))
 fn print_(o: Row[Int]): print(str_(o))
+
+
+
+fn eval_int_array(string: String) raises -> Array[Int]:
+    """Evaluate the string as an array."""
+    var cleaned: String = string
+    cleaned = cleaned.replace("[", "")
+    cleaned = cleaned.replace("]", "")
+    cleaned = cleaned.replace("{", "")
+    cleaned = cleaned.replace("}", "")
+
+    if len(cleaned) == 0: raise Error("empty string")
+
+    var splitted: List[String]
+
+    try:
+        splitted = cleaned.split(",")
+        if len(splitted) == 1:
+            splitted = cleaned.split("-")
+    except:
+        raise Error("empty delimiter")
+
+    if len(splitted) == 0: raise Error("non parsable")
+
+    var result: Array[Int] = Array[Int](size = len(splitted))
+
+    try:
+        for i in range(len(splitted)):
+            result[i] = int(splitted[i])
+    except:
+        raise Error("non parsable")
+
+    return result

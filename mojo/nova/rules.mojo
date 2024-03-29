@@ -1,19 +1,18 @@
 """
-Contains rules, and the means to follow them
+Contains rules, and the means to follow them.
 
 Example: `follow[unfold]()`
 """
 
 from math import min, max
-from collections.vector import DynamicVector
+from collections import List
 from utils.index import StaticIntTuple as Ind
-from array import Array
-from table import Table, Row
-from graph import Graph
+from .collections.array import Array
+from .collections.table import Table, Row
+from .graph.graph import Graph
 
 alias Ind2 = Ind[2]
-
-
+alias Nat = UInt32
 
 
 #------ Follow a history, using a rule (found below) ------#
@@ -48,11 +47,11 @@ fn unfold(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph with
     # if the seed graph is empty or does not contain origin, give the single (implicit) self-loop. (step 1)
     if width <= 0 or width < origin or origin < 1:
         return Graph(
-            Array[Int](seed.history, origin), #---- history
-            Table[Int](1,1,1), #------------------- nodes
-            Table[Int](1,1,0), #------------------- edges
-            Array[Int](1,1), #--------------------- weights
-            Array[Ind2](1,Ind2(0,0)) #--------- _xy_id
+            seed.history.append(origin), #----- history
+            Table[Int](1,1,1), #--------------- nodes
+            Table[Int](1,1,0), #--------------- edges
+            Array[Int](1), #------------------- weights
+            Array[Ind2](Ind2(0,0)) #----------- _xy_id
             )
     
     # this graph has reached step > 1, start the crawling process
@@ -66,10 +65,10 @@ fn unfold(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph with
     var node_est: Int = width * depth_est   #? node estimate~ < seed count * 3
     
     # create new containers for the resulting graph
-    var nodes: Table[Int] = Table[Int](width, depth_est)
-    var edges: Table[Int] = Table[Int](node_est, node_est)
-    var weights: Array[Int] = Array[Int](node_est)
-    var _xy_id: Array[Ind2] = Array[Ind2](node_est)
+    var nodes = Table[Int](width, depth_est)
+    var edges = Table[Int](node_est, node_est)
+    var weights = Array[Int](size = node_est)
+    var _xy_id = Array[Ind2](size = node_est)
     
     # add origin node
     var _o: Int = seed.id_lb(origin)
@@ -84,10 +83,10 @@ fn unfold(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph with
     #--- when a node with at least one child which doesnt loop is reached, that childs index will be pushed onto the trace, and used to set the indexed mask true
     #--- when a node is reached where every child forms a loop, it's index will be popped from the trace, and used to set the indexed mask false
     #---
-    var trace: DynamicVector[Int] = DynamicVector[Int](capacity=width)
-    var mask: Array[Int] = Array[Int](width)  # mask contains the depth the trace was at when the index was pushed, +1. if it has not been reached, 0.
-    var edge_start: Int = 0                   # the edge to start looping at
-    var edge_limit: Int = 0                   # the edge to stop looping at
+    var trace: List[Int] = List[Int](capacity = width)
+    var mask = Array[Int](size = width)   # mask contains the depth the trace was at when the index was pushed, +1. if it has not been reached, 0.
+    var edge_start: Int = 0               # the edge to start looping at
+    var edge_limit: Int = 0               # the edge to stop looping at
     var o_: Int = _o
     
     @parameter #--- the walk did not touch itself, try adding the reached node
@@ -125,7 +124,7 @@ fn unfold(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph with
         o_ = _o
         depth += 1
         mask[o_] = depth
-        trace.push_back(o_)
+        trace.append(o_)
         _reach()
         edge_start = seed.bounds[o_][0]
         edge_limit = seed.bounds[o_][1]
@@ -159,11 +158,11 @@ fn unfold(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph with
     # TODO debug / estimates error
     
     return Graph(
-        Array[Int](seed.history, origin),
+        seed.history.append(origin),
         Table[Int](width, depth, nodes),
         Table[Int](node_count, node_count, edges),
-        Array[Int](node_count, weights),
-        Array[Ind2](node_count, _xy_id))
+        weights.shrink(node_count),
+        _xy_id.shrink(node_count))
 
 
 
@@ -192,11 +191,11 @@ fn unfold_loop(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph
     # if the seed graph is empty or does not contain origin, give the single (implicit) self-loop. (step 1)
     if width <= 0 or width < origin or origin < 1:
         return Graph(
-            Array[Int](seed.history, origin), #---- history
+            seed.history.append(origin), #---- history
             Table[Int](1,1,1), #------------------- nodes
             Table[Int](1,1,0), #------------------- edges
-            Array[Int](1,1), #--------------------- weights
-            Array[Ind2](1,Ind2(0,0)) #--------- _xy_id
+            Array[Int](1), #--------------------- weights
+            Array[Ind2](Ind2(0,0)) #--------- _xy_id
             )
     
     # this graph has reached step > 1, start the crawling process
@@ -210,10 +209,10 @@ fn unfold_loop(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph
     var node_est: Int = width * depth_est   #? node estimate~ < seed count * 3
     
     # create new containers for the resulting graph
-    var nodes: Table[Int] = Table[Int](width, depth_est)
-    var edges: Table[Int] = Table[Int](node_est, node_est)
-    var weights: Array[Int] = Array[Int](node_est)
-    var _xy_id: Array[Ind2] = Array[Ind2](node_est)
+    var nodes = Table[Int](width, depth_est)
+    var edges = Table[Int](node_est, node_est)
+    var weights = Array[Int](size = node_est)
+    var _xy_id = Array[Ind2](size = node_est)
     
     # add origin node
     var _o: Int = seed.id_lb(origin)
@@ -228,10 +227,10 @@ fn unfold_loop(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph
     #--- when a node with at least one child which doesnt loop is reached, that childs index will be pushed onto the trace, and used to set the indexed mask true
     #--- when a node is reached where every child forms a loop, it's index will be popped from the trace, and used to set the indexed mask false
     #---
-    var trace: DynamicVector[Int] = DynamicVector[Int](capacity=width)
-    var mask: Array[Int] = Array[Int](width)  # mask contains the depth the trace was at when the index was pushed, +1. if it has not been reached, 0.
-    var edge_start: Int = 0                   # the edge to start looping at
-    var edge_limit: Int = 0                   # the edge to stop looping at
+    var trace: List[Int] = List[Int](capacity = width)
+    var mask = Array[Int](size = width)   # mask contains the depth the trace was at when the index was pushed, +1. if it has not been reached, 0.
+    var edge_start: Int = 0               # the edge to start looping at
+    var edge_limit: Int = 0               # the edge to stop looping at
     var o_: Int = _o
     
     @parameter
@@ -275,7 +274,7 @@ fn unfold_loop(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph
         o_ = _o
         depth += 1
         mask[o_] = depth
-        trace.push_back(o_)
+        trace.append(o_)
         _touch()
         edge_start = seed.bounds[o_][0]
         edge_limit = seed.bounds[o_][1]
@@ -309,8 +308,8 @@ fn unfold_loop(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph
     # TODO debug / estimates error
     
     return Graph(
-        Array[Int](seed.history, origin),
+        seed.history.append(origin),
         Table[Int](width, depth, nodes),
         Table[Int](node_count, node_count, edges),
-        Array[Int](node_count, weights),
-        Array[Ind2](node_count, _xy_id))
+        weights.shrink(node_count),
+        _xy_id.shrink(node_count))

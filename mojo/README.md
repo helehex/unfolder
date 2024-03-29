@@ -1,13 +1,13 @@
-Tested on Mojo 24.1.1
+Tested on Mojo 24.2
 
 # Unfolders
 - Unfolders generate new graphs by following all possible walks, starting from a given node, in an existing graph
-- To generate an unfolder graph, you can input an origin history: ex. {1, 1, 2, 1, 5, 3}
-- See `main.mojo` for an example of following an origin history
+- To generate an unfolder graph, you can input an origin history: ex. `1-1-2-1-5-3`
+
 
 Example command: `mojo mojo/unfold.mojo 1-1-1-2`
 
-Adding `-s` will print just the meta data of the resulting graph
+Adding `-s` will just print a summary of the resulting graph.
 
 # Variants:
 
