@@ -1,4 +1,0 @@
-- reach step 7
-    - create more memory efficient graph implementations
-- generate causal graphs
-    - automate writing results to a file

@@ -1,82 +1,44 @@
-from nova.collections import *
-from nova.graph import *
-from nova.io import *
+from testing import *
+from nova.testing import *
 
-from collections.vector import InlinedFixedVector
+from sys.intrinsics import _type_is_eq
+from nova import Table
 
-fn main():
-    array_test()
-    print()
-    small_vector_test()
-
-#------ Array Test ------#
-#
-fn array_test():
-    var a: Array[Int]
-
-    # initialize
-    a = Array[Int]()
-    print("new ----------", str_(a), True if a else False)
-    a = Array[Int](size = 5)
-    print("new ----------", str_(a), True if a else False)
-    a = Array[Int](size = 5, fill = 1)
-    print("new ----------", str_(a))
-    a = VariadicList[Int](1,2,3,4,5)
-    print("new ----------", str_(a))
-    a = Array[Int](1,2,3,4,5)
-    print("new ----------", str_(a))
-    a = Array[Int](copy = Array[Int](1,2,3,4,5), size = 6, end = 5)
-    print("new ----------", str_(a))
-    a = Array[Int](copy = Array[Int](0,1,2,3,4,5,6), size = 5, start = 2, end = 7)
-    print("new ----------", str_(a))
-    a = Array[Int](copy = a)
-    print("new ----------", str_(a))
-
-    print("--------- rc:", a._get_rc())
-
-    # get / set
-    a[1] = -2
-    print("get index ----", a[1])
-    print("get slice ----", str_(a[1:4]))
-    
-    # rc
-    var b = a
-    print("--------- rc:", a._get_rc())
-
-    # expand / shrink
-    print("shrink 2 -----", str_(b.shrink(2)))
-    print("expand 8 -----", str_(a.expand(8)))
-
-    # append / remove
-    print("append 6, 7 --", str_(b.append(6,7)))
-    print("remove 2 -----", str_(a.remove(2)))
-
-    #rc
-    var c = b.deepcopy()
-    print("deepcopy -----", str_(c))
-    print("--------- rc:", a._get_rc())
-    print("--------- rc:", b._get_rc())
+def main():
+    test_subscript()
+    test_truthy()
+    test_equality()
 
 
-#------ Small Vector Test ------#
-#
-fn small_vector_test():
-    var a = SmallVector[Int, 8, BoundaryCondition.Overlap](0, 1, 2)
-    var b = SmallVector[Int, 8, BoundaryCondition.Overlap](0, 1, 2)
-    a.append(3)
-    print(a)
-    print()
-    print(a.pop())
-    print(a == b)
-    print(a[-2])
-    print()
-    print(a)
+def test_subscript():
+    var tbl = Table[Int](cols=5, rows=6)
+    assert_equal(tbl[0, 0], 0)
+    tbl[0, 0] = 3
+    assert_equal(tbl[0, 0], 3)
+    assert_equal(tbl[5, 4], 0)
+    tbl[5, 4] = 4
+    assert_equal(tbl[5, 4], 4)
+
+
+def test_truthy():
+    assert_false(Table[Int]())
+    assert_false(Table[Int](cols=1,rows=0))
+    assert_false(Table[Int](cols=0,rows=1))
+    assert_true(Table[Int](cols=1,rows=1))
+
+
+def test_equality():
+    assert_equal(Table[Int](), Table[Int]())
+    assert_equal(Table[Int](), Table[Int](cols=0, rows=0))
+    assert_equal(Table[Int](cols=1, rows=0), Table[Int](cols=1, rows=0))
+    assert_equal(Table[Int](cols=0, rows=1), Table[Int](cols=0, rows=1))
+    assert_equal(Table[Int](cols=1, rows=1), Table[Int](cols=1, rows=1))
 
 
 #------ table test ------#
 #
-fn table_test():
-    pass
+# fn table_test():
+#     pass
     # var table_none: Table[Int] = Table[Int]()
     # var table_zero: Table[Int] = Table[Int](0,0)
     # var table_cols: Table[Int] = Table[Int](6,0)

@@ -1,0 +1,6 @@
+/dist
+/test/*.mojopkg
+
+/src/collections/nova_set.mojo
+
+**temp.mojo
