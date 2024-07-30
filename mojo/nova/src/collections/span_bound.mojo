@@ -13,16 +13,15 @@ from math import iota
 #
 @register_passable("trivial")
 struct SpanBound(Equatable):
-
     # +------[ Alias ]------+ #
     #
-    alias Unsafe = SpanBound{value: 0}
+    alias Unsafe = SpanBound {value: 0}
     """Performs no bounds checks."""
-    alias Clamp = SpanBound{value: 1}
+    alias Clamp = SpanBound {value: 1}
     """Clamps the index between `0` and `size`."""
-    alias Wrap = SpanBound{value: 2}
+    alias Wrap = SpanBound {value: 2}
     """Wraps the index mod `size`."""
-    alias Lap = SpanBound{value: 3}
+    alias Lap = SpanBound {value: 3}
     """Allows negative indexing."""
 
     # +------< Data >------+ #
@@ -39,7 +38,8 @@ struct SpanBound(Equatable):
         elif self == Self.Wrap:
             idx = idx % size
         elif self == Self.Lap:
-            if idx < 0: idx += size
+            if idx < 0:
+                idx += size
         debug_assert(0 <= idx < size, "index out of bounds: " + context)
 
     @always_inline("nodebug")
@@ -58,7 +58,7 @@ struct SpanBound(Equatable):
             slice.end = min(max(slice.end.value(), -slice.step), size + slice.step - 1)
         elif self == Self.Wrap:
             slice.start = slice.start.value() % size
-            slice.end = slice.start.value() % size   #####
+            slice.end = slice.start.value() % size  #####
         elif self == Self.Lap:
             if has_start and slice.start.value() < 0:
                 slice.start = slice.start.value() + size
@@ -66,12 +66,17 @@ struct SpanBound(Equatable):
                 slice.end = slice.end.value() + size
 
         debug_assert(0 <= slice.start.value() < size, "slice.start out of bounds: " + context)
-        debug_assert(-slice.step <= slice.end.value() < size + slice.step, "slice.stop out of bounds: " + context)
+        debug_assert(
+            -slice.step <= slice.end.value() < size + slice.step,
+            "slice.stop out of bounds: " + context,
+        )
 
     # +------( Operations )------+ #
     #
     @always_inline("nodebug")
-    fn __eq__(self, other: Self) -> Bool: return self.value == other.value
+    fn __eq__(self, other: Self) -> Bool:
+        return self.value == other.value
 
     @always_inline("nodebug")
-    fn __ne__(self, other: Self) -> Bool: return self.value != other.value
+    fn __ne__(self, other: Self) -> Bool:
+        return self.value != other.value

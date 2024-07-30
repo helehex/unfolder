@@ -17,4 +17,3 @@ struct Color:
     alias pink = "\033[0;35m"
     alias cyan = "\033[0;36m"
     alias white = "\033[0;37m"
-    

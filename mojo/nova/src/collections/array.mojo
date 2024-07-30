@@ -11,8 +11,9 @@ from math import ceildiv
 # | Array
 # +----------------------------------------------------------------------------------------------+ #
 #
-#
-struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"](Formattable, Sized, Boolable, Value):
+struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"](
+    Formattable, Sized, Boolable, Value
+):
     """A heap allocated array.
 
     Parameters:
@@ -39,6 +40,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         """Creates a new array and fills it with default values."""
         self._data = UnsafePointer[T].alloc(size)
         self._size = size
+
         @parameter
         if clear:
             _init(self._data, size)
@@ -51,14 +53,14 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     @always_inline("nodebug")
     fn __init__(inout self, items: VariadicListMem[T, _, _]):
         """Creates a new array with the given items."""
-        self.__init__[False](size = len(items))
+        self.__init__[False](size=len(items))
         for idx in range(self._size):
             _copy(self._data + idx, items[idx])
 
     @always_inline("nodebug")
     fn __init__(inout self, *items: T, size: Int):
         """Creates a new array with the given items."""
-        self.__init__[False](size = size)
+        self.__init__[False](size=size)
         for idx in range(size):
             _copy(self._data + idx, items[idx % len(items)])
 
@@ -68,7 +70,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         var size = 0
         for array in arrays:
             size += len(array[])
-        self.__init__[False](size = size)
+        self.__init__[False](size=size)
         var dst = self._data
         for array in arrays:
             _copy(dst, array[]._data, len(array[]))
@@ -77,7 +79,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     @always_inline("nodebug")
     fn __init__[__: None = None](inout self, *arrays: Array[T, _, _], size: Int):
         """Creates a new array by joining existing arrays."""
-        self.__init__[False](size = size)
+        self.__init__[False](size=size)
         var idx = 0
         var empty = False
         while not empty:
@@ -91,7 +93,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
             empty = idx == 0
         __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
         self._data.free()
-        self = Self(size = size)
+        self = Self(size=size)
 
     # @always_inline("nodebug")
     # fn __init__(inout self, owned tuple: Tuple):
@@ -110,7 +112,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     @always_inline("nodebug")
     fn __init__[__: None = None](inout self, other: ArrayIter[T, _, _, _]):
         """Copy the data from an array iterator into this one."""
-        self.__init__[False](size = len(other))
+        self.__init__[False](size=len(other))
         _copy(self._data, other)
 
     # # for converting an array to a different bound/format.
@@ -126,7 +128,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     fn __copyinit__(inout self, other: Self):
         """Copy an existing array into the new array."""
         if other._data:
-            self.__init__[False](size = len(other))
+            self.__init__[False](size=len(other))
             _copy(self._data, other._data, len(other))
         else:
             self = Self()
@@ -147,16 +149,20 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     # +------( Subscript )------+ #
     #
     @always_inline("nodebug")
-    fn __getitem__[bnd: SpanBound = bnd](ref[_]self, owned idx: Int) -> ref [__lifetime_of(self)] T:
+    fn __getitem__[
+        bnd: SpanBound = bnd
+    ](ref [_]self, owned idx: Int) -> ref [__lifetime_of(self)] T:
         bnd.adjust(idx, self._size)
         return self.unsafe_get(idx)
 
     @always_inline("nodebug")
-    fn unsafe_get(ref[_]self, owned idx: Int) -> ref [__lifetime_of(self)] T:
+    fn unsafe_get(ref [_]self, owned idx: Int) -> ref [__lifetime_of(self)] T:
         return (self._data + idx)[]
 
     @always_inline("nodebug")
-    fn __getitem__[bnd: SpanBound = bnd](ref[_]self, owned slice: Slice) -> ArrayIter[T, bnd, fmt, __lifetime_of(self)]:
+    fn __getitem__[
+        bnd: SpanBound = bnd
+    ](ref [_]self, owned slice: Slice) -> ArrayIter[T, bnd, fmt, __lifetime_of(self)]:
         bnd.adjust(slice, self._size)
         return ArrayIter[T, bnd, fmt, __lifetime_of(self)](self._data, slice)
 
@@ -175,15 +181,14 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
         return result^
 
-
     # +------( Iterate )------+ #
     #
     @always_inline("nodebug")
-    fn __iter__(ref[_]self) -> ArrayIter[T, bnd, fmt, __lifetime_of(self)]:
+    fn __iter__(ref [_]self) -> ArrayIter[T, bnd, fmt, __lifetime_of(self)]:
         return self[:]
 
     @always_inline("nodebug")
-    fn __reversed__(ref[_]self) -> ArrayIter[T, bnd, fmt, __lifetime_of(self)]:
+    fn __reversed__(ref [_]self) -> ArrayIter[T, bnd, fmt, __lifetime_of(self)]:
         return self[::-1]
 
     # +------( Format )------+ #
@@ -204,6 +209,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     @always_inline("nodebug")
     fn eval[fmt: ArrayFormat = fmt](owned txt: String) raises -> Self:
         """Evaluate the string as an array."""
+
         @parameter
         if _type_is_eq[T, Int]():
             var split_txt = txt.removeprefix(fmt.beg).removesuffix(fmt.end or " ").split(fmt.sep)
@@ -212,7 +218,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
                 return Self()
 
             var result: Self
-            result.__init__[False](size = len(split_txt))
+            result.__init__[False](size=len(split_txt))
             var ptr = rebind[UnsafePointer[Int]](result._data)
 
             for idx in range(len(split_txt)):
@@ -282,7 +288,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     @always_inline("nodebug")
     fn _append(self, item: T) -> Self:
         var new_array: Self
-        new_array.__init__[False](size = len(self) + 1)
+        new_array.__init__[False](size=len(self) + 1)
         _move(new_array._data, self._data, len(self))
         _copy(new_array._data + len(self), item)
         return new_array
@@ -290,7 +296,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     @always_inline("nodebug")
     fn _append(self, owned items: ArrayIter[T, _, _, _]) -> Self:
         var new_array: Self
-        new_array.__init__[False](size = len(self) + len(items))
+        new_array.__init__[False](size=len(self) + len(items))
         _move(new_array._data, self._data, len(self))
         _copy(new_array._data + len(self), items)
         return new_array
@@ -298,7 +304,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     @always_inline("nodebug")
     fn append(inout self, item: T):
         var new_array: Self
-        new_array.__init__[False](size = len(self) + 1)
+        new_array.__init__[False](size=len(self) + 1)
         _move(new_array._data, self._data, len(self))
         _copy(new_array._data + len(self), item)
         __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
@@ -308,7 +314,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     @always_inline("nodebug")
     fn append(inout self, items: ArrayIter[T, _, _, _]):
         var new_array: Self
-        new_array.__init__[False](size = len(self) + len(items))
+        new_array.__init__[False](size=len(self) + len(items))
         _move(new_array._data, self._data, len(self))
         _copy(new_array._data + len(self), items)
         __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
@@ -321,7 +327,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     fn inserted[bnd: SpanBound = bnd](self, owned idx: Int, item: T) -> Self:
         bnd.adjust(idx, len(self))
         var new_array: Self
-        new_array.__init__[False](size = len(self) + 1)
+        new_array.__init__[False](size=len(self) + 1)
         _copy(new_array._data, self._data, idx)
         _copy(new_array._data + idx, item)
         _copy(new_array._data + idx + 1, self._data + idx, self._size - idx)
@@ -331,7 +337,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     fn inserted[bnd: SpanBound = bnd](self, owned idx: Int, items: ArrayIter[T, _, _, _]) -> Self:
         bnd.adjust(idx, len(self))
         var new_array: Self
-        new_array.__init__[False](size = len(self) + len(items))
+        new_array.__init__[False](size=len(self) + len(items))
         _copy(new_array._data, self._data, idx)
         _copy(new_array._data + idx, items)
         _copy(new_array._data + idx + len(items), self._data + idx, self._size - idx)
@@ -341,7 +347,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     fn insert(inout self, owned idx: Int, item: T):
         bnd.adjust(idx, len(self))
         var new_array: Self
-        new_array.__init__[False](size = len(self) + 1)
+        new_array.__init__[False](size=len(self) + 1)
         _move(new_array._data, self._data, idx)
         _copy(new_array._data + idx, item)
         _move(new_array._data + idx + 1, self._data + idx, self._size - idx)
@@ -353,7 +359,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     fn insert(inout self, owned idx: Int, items: ArrayIter[T, _, _, _]):
         bnd.adjust(idx, len(self))
         var new_array: Self
-        new_array.__init__[False](size = len(self) + len(items))
+        new_array.__init__[False](size=len(self) + len(items))
         _move(new_array._data, self._data, idx)
         _copy(new_array._data + idx, items)
         _move(new_array._data + idx + len(items), self._data + idx, self._size - idx)
@@ -387,7 +393,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     @always_inline("nodebug")
     fn unsafe_shrinked(self, size: Int) -> Self:
         var new_array: Self
-        new_array.__init__[False](size = size)
+        new_array.__init__[False](size=size)
         _copy(new_array._data, self._data, size)
         return new_array
 
@@ -399,7 +405,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     @always_inline("nodebug")
     fn unsafe_expanded(self, size: Int) -> Self:
         var new_array: Self
-        new_array.__init__[False](size = size)
+        new_array.__init__[False](size=size)
         _copy(new_array._data, self._data, self._size)
         _init(new_array._data + self._size, size - self._size)
         return new_array
@@ -407,7 +413,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     @always_inline("nodebug")
     fn unsafe_expand(inout self, size: Int):
         var new_array: Self
-        new_array.__init__[False](size = size)
+        new_array.__init__[False](size=size)
         _move(new_array._data, self._data, self._size)
         _init(new_array._data + self._size, size - self._size)
         __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
@@ -464,9 +470,14 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
 # | Array Iter
 # +----------------------------------------------------------------------------------------------+ #
 #
-#
 @value
-struct ArrayIter[mutability: Bool, //, T: Value, bnd: SpanBound, fmt: ArrayFormat, lifetime: AnyLifetime[mutability].type](Formattable, Sized, Value):
+struct ArrayIter[
+    mutability: Bool, //,
+    T: Value,
+    bnd: SpanBound,
+    fmt: ArrayFormat,
+    lifetime: AnyLifetime[mutability].type,
+](Formattable, Sized, Value):
     """Span for Array.
 
     Parameters:
@@ -508,7 +519,7 @@ struct ArrayIter[mutability: Bool, //, T: Value, bnd: SpanBound, fmt: ArrayForma
         self.step = slice.step
 
     @always_inline("nodebug")
-    fn __init__(inout self, ref[lifetime] src: Array[T, bnd, fmt]):
+    fn __init__(inout self, ref [lifetime]src: Array[T, bnd, fmt]):
         self = ArrayIter[T, bnd, fmt, lifetime](src._data, src._size)
 
     @always_inline("nodebug")
@@ -521,7 +532,7 @@ struct ArrayIter[mutability: Bool, //, T: Value, bnd: SpanBound, fmt: ArrayForma
     # +------( Subscript )------+ #
     #
     @always_inline("nodebug")
-    fn __getitem__(self, owned idx: Int) -> ref[lifetime] T:
+    fn __getitem__(self, owned idx: Int) -> ref [lifetime] T:
         bnd.adjust(idx, self.size)
         return (self._src + self.start + idx * self.step)[]
 
@@ -581,19 +592,23 @@ struct ArrayIter[mutability: Bool, //, T: Value, bnd: SpanBound, fmt: ArrayForma
             return
 
         var iter = self.__iter__()
+
         @parameter
         @always_inline("nodebug")
         fn _write():
-            write_to(writer, fmt.item_color, str(iter.__next__()[]))
+            writer.write(fmt.item_color, str(iter.__next__()[]))
+
         write_sep[_write, fmt](writer, len(iter))
 
     @always_inline("nodebug")
     fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter, align: Int):
         var iter = self.__iter__()
+
         @parameter
         @always_inline("nodebug")
         fn _str():
             write_align[fmt.pad, fmt.item_color](writer, str(iter.__next__()[]), align)
+
         write_sep[_str, fmt](writer, len(iter))
 
     # +------( Operations )------+ #
@@ -611,7 +626,7 @@ struct ArrayIter[mutability: Bool, //, T: Value, bnd: SpanBound, fmt: ArrayForma
         return self.__eq__[None](rhs)
 
     @always_inline("nodebug")
-    fn __eq__[__:None=None](self, rhs: ArrayIter[T, _, _, _]) -> Bool:
+    fn __eq__[__: None = None](self, rhs: ArrayIter[T, _, _, _]) -> Bool:
         if len(self) != len(rhs):
             return False
         for idx in range(len(self)):
@@ -624,7 +639,7 @@ struct ArrayIter[mutability: Bool, //, T: Value, bnd: SpanBound, fmt: ArrayForma
         return self.__ne__[None](rhs)
 
     @always_inline("nodebug")
-    fn __ne__[__:None=None](self, rhs: ArrayIter[T, _, _, _]) -> Bool:
+    fn __ne__[__: None = None](self, rhs: ArrayIter[T, _, _, _]) -> Bool:
         if len(self) != len(rhs):
             return True
         for idx in range(len(self)):
@@ -669,7 +684,6 @@ struct ArrayIter[mutability: Bool, //, T: Value, bnd: SpanBound, fmt: ArrayForma
 # +----------------------------------------------------------------------------------------------+ #
 # | Array Format
 # +----------------------------------------------------------------------------------------------+ #
-#
 #
 @value
 struct ArrayFormat:

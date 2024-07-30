@@ -12,8 +12,11 @@ from .array import ArrayIter
 # | Table
 # +----------------------------------------------------------------------------------------------+ #
 #
-#
-struct Table[T: Value, bnd: Tuple[SpanBound, SpanBound] = (SpanBound.Lap, SpanBound.Lap), fmt: TableFormat = TableFormat()](Formattable, Value):
+struct Table[
+    T: Value,
+    bnd: Tuple[SpanBound, SpanBound] = (SpanBound.Lap, SpanBound.Lap),
+    fmt: TableFormat = TableFormat(),
+](Formattable, Value):
     """A heap allocated table.
 
     Parameters:
@@ -42,20 +45,21 @@ struct Table[T: Value, bnd: Tuple[SpanBound, SpanBound] = (SpanBound.Lap, SpanBo
         var size = cols * rows
         self._data = UnsafePointer[T].alloc(size)
         self._cols, self._rows = cols, rows
+
         @parameter
         if clear:
             _init(self._data, size)
 
     @always_inline("nodebug")
     fn __init__(inout self, cols: Int, rows: Int, *, fill: T):
-        self.__init__[False](cols=cols,rows=rows)
+        self.__init__[False](cols=cols, rows=rows)
         for idx in range(cols * rows):
             _copy(self._data + idx, fill)
 
     # Optional[T] until problem is fixed
     @always_inline("nodebug")
-    fn __init__(inout self, cols: Int, rows: Int, *, rule: fn(Int,Int)->Optional[T]):
-        self.__init__[False](cols=cols,rows=rows)
+    fn __init__(inout self, cols: Int, rows: Int, *, rule: fn (Int, Int) -> Optional[T]):
+        self.__init__[False](cols=cols, rows=rows)
         var idx = 0
         for y in range(rows):
             for x in range(cols):
@@ -86,43 +90,55 @@ struct Table[T: Value, bnd: Tuple[SpanBound, SpanBound] = (SpanBound.Lap, SpanBo
     # +------( Subscript )------+ #
     #
     @always_inline("nodebug")
-    fn __getitem__(ref[_] self, col: Int, row: Int) -> ref[__lifetime_of(self)] T:
-        return (self._data + (row*self._cols + col))[]
+    fn __getitem__(ref [_]self, col: Int, row: Int) -> ref [__lifetime_of(self)] T:
+        return (self._data + (row * self._cols + col))[]
 
     @always_inline("nodebug")
-    fn __getitem__(ref[_] self, ind: Ind2) -> ref[__lifetime_of(self)] T:
+    fn __getitem__(ref [_]self, ind: Ind2) -> ref [__lifetime_of(self)] T:
         return self[ind[0], ind[1]]
 
     @always_inline("nodebug")
-    fn __getitem__(self, owned col: Slice, owned row: Int) -> ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)]:
+    fn __getitem__(
+        self, owned col: Slice, owned row: Int
+    ) -> ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)]:
         bnd[0].adjust(col, self._cols)
         bnd[1].adjust(row, self._rows)
-        var idx = row*self._cols
+        var idx = row * self._cols
         var start = idx + col.start.value()
         var stop = idx + col.end.value()
-        return ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)](self._data, Slice(start, stop, col.step))
+        return ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)](
+            self._data, Slice(start, stop, col.step)
+        )
 
     @always_inline("nodebug")
-    fn __getitem__(self, owned col: Int, owned row: Slice) -> ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)]:
+    fn __getitem__(
+        self, owned col: Int, owned row: Slice
+    ) -> ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)]:
         bnd[0].adjust(col, self._cols)
         bnd[1].adjust(row, self._rows)
-        var start = row.start.value()*self._cols + col
-        var stop = row.end.value()*self._cols + col
-        var step = self._cols*row.step
-        return ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)](self._data, Slice(start, stop, step))
+        var start = row.start.value() * self._cols + col
+        var stop = row.end.value() * self._cols + col
+        var step = self._cols * row.step
+        return ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)](
+            self._data, Slice(start, stop, step)
+        )
 
     @always_inline("nodebug")
     fn row(self, idx: Int) -> ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)]:
-        var start = idx*self._cols
+        var start = idx * self._cols
         var stop = start + self._cols
-        return ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)](self._data, Slice(start, stop))
+        return ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)](
+            self._data, Slice(start, stop)
+        )
 
     @always_inline("nodebug")
     fn col(self, idx: Int) -> ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)]:
         var start = idx
-        var stop = self._cols*self._rows
+        var stop = self._cols * self._rows
         var step = self._cols
-        return ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)](self._data, Slice(start, stop, step))
+        return ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)](
+            self._data, Slice(start, stop, step)
+        )
 
     # +------( Format )------+ #
     #
@@ -158,6 +174,7 @@ struct Table[T: Value, bnd: Tuple[SpanBound, SpanBound] = (SpanBound.Lap, SpanBo
     @always_inline("nodebug")
     fn _get_tbl_pad[fmt: TableFormat = fmt](self) -> Int:
         var result = len(str(self._rows - 1)) - 1
+
         @parameter
         if fmt.show_col_idx:
             result = max(result, len(fmt.lbl))
@@ -172,75 +189,118 @@ struct Table[T: Value, bnd: Tuple[SpanBound, SpanBound] = (SpanBound.Lap, SpanBo
         var pad = self._get_tbl_pad[fmt]()
 
         if self._cols <= 0 or self._rows <= 0:
+
             @parameter
-            if bool(fmt.lbl) and fmt.show_col_idx and fmt.show_row_idx: # remove bool()?
-                write_to(writer, fmt.box_color, Box.rb)
+            if bool(fmt.lbl) and fmt.show_col_idx and fmt.show_row_idx:  # remove bool()?
+                writer.write(fmt.box_color, Box.rb)
                 write_rep(writer, Box.h, len(fmt.lbl) + 2)
-                write_to(writer, Box.lb + "\n" + Box.v + " ")
-                write_to(writer, fmt.lbl_color, fmt.lbl, fmt.box_color)
-                write_to(writer, " " + Box.v + "\n" + Box.rt)
+                writer.write(Box.lb + "\n" + Box.v + " ")
+                writer.write(fmt.lbl_color, fmt.lbl, fmt.box_color)
+                writer.write(" " + Box.v + "\n" + Box.rt)
                 write_rep(writer, Box.h, len(fmt.lbl) + 2)
-                write_to(writer, Box.lt + Color.clear)
+                writer.write(Box.lt + Color.clear)
             else:
-                write_to(writer, fmt.box_color)
-                write_to(writer, Box.rb + Box.h + Box.lb + "\n" + Box.rt + Box.h + Box.lt + Color.clear)
+                writer.write(fmt.box_color)
+                writer.write(Box.rb + Box.h + Box.lb + "\n" + Box.rt + Box.h + Box.lt + Color.clear)
             return
-        
+
         @parameter
         if fmt.show_col_idx:
+
             @parameter
             if fmt.show_row_idx:
                 write_sep[ArrayFormat(Box.rb, Box.h, "", "", fmt.box_color)](writer, 1, pad + 2)
-                write_sep[ArrayFormat(Box.hB, Box.h, Box.hb, Box.lb + "\n", fmt.box_color)](writer, self._cols, align)
+                write_sep[ArrayFormat(Box.hB, Box.h, Box.hb, Box.lb + "\n", fmt.box_color)](
+                    writer, self._cols, align
+                )
 
                 @parameter
                 @always_inline("nodebug")
                 fn _str_lbl() -> String:
                     return str(fmt.lbl)
-                write_sep[_str_lbl, ArrayFormat(Box.v + " ", " ", "", " ", fmt.box_color, fmt.lbl_color)](writer, 1, pad)
+
+                write_sep[
+                    _str_lbl, ArrayFormat(Box.v + " ", " ", "", " ", fmt.box_color, fmt.lbl_color)
+                ](writer, 1, pad)
             else:
-                write_sep[ArrayFormat(Box.rB, Box.h, Box.hb, Box.lb + "\n", fmt.box_color)](writer, self._cols, align)
+                write_sep[ArrayFormat(Box.rB, Box.h, Box.hb, Box.lb + "\n", fmt.box_color)](
+                    writer, self._cols, align
+                )
 
             @parameter
             @always_inline("nodebug")
             fn _str_col_idx(idx: Int) -> String:
                 return str(idx)
-            write_sep[_str_col_idx, ArrayFormat(Box.V, " ", Box.v, Box.v + "\n", fmt.box_color, fmt.idx_color)](writer, self._cols, align)
+
+            write_sep[
+                _str_col_idx,
+                ArrayFormat(Box.V, " ", Box.v, Box.v + "\n", fmt.box_color, fmt.idx_color),
+            ](writer, self._cols, align)
 
             @parameter
             if fmt.show_row_idx:
                 write_sep[ArrayFormat(Box.Rv, Box.H, "", "", fmt.box_color)](writer, 1, pad + 2)
-                write_sep[ArrayFormat(Box.HV, Box.H, Box.Hv, Box.Lv + "\n", fmt.box_color)](writer, self._cols, align)
+                write_sep[ArrayFormat(Box.HV, Box.H, Box.Hv, Box.Lv + "\n", fmt.box_color)](
+                    writer, self._cols, align
+                )
             else:
-                write_sep[ArrayFormat(Box.RV, Box.H, Box.Hv, Box.Lv + "\n", fmt.box_color)](writer, self._cols, align)
+                write_sep[ArrayFormat(Box.RV, Box.H, Box.Hv, Box.Lv + "\n", fmt.box_color)](
+                    writer, self._cols, align
+                )
         else:
+
             @parameter
             if fmt.show_row_idx:
                 write_sep[ArrayFormat(Box.Rb, Box.H, "", "", fmt.box_color)](writer, 1, pad + 2)
-                write_sep[ArrayFormat(Box.HB, Box.H, Box.Hb, Box.Lb + "\n", fmt.box_color)](writer, self._cols, align)
+                write_sep[ArrayFormat(Box.HB, Box.H, Box.Hb, Box.Lb + "\n", fmt.box_color)](
+                    writer, self._cols, align
+                )
             else:
-                write_sep[ArrayFormat(Box.RB, Box.H, Box.Hb, Box.Lb + "\n", fmt.box_color)](writer, self._cols, align)
+                write_sep[ArrayFormat(Box.RB, Box.H, Box.Hb, Box.Lb + "\n", fmt.box_color)](
+                    writer, self._cols, align
+                )
 
         @parameter
         @always_inline("nodebug")
         fn _str_rows(idx: Int):
             @parameter
             if fmt.show_row_idx:
+
                 @parameter
                 @always_inline("nodebug")
                 fn _str_row_idx(_idx: Int) -> String:
                     return str(idx)
-                write_sep[_str_row_idx, ArrayFormat(fmt.box_color + Box.v, fmt.item_pad, "", fmt.box_color + fmt.item_pad, "", fmt.idx_color)](writer, 1, pad + 1)
 
-            self.row(idx).format_to[ArrayFormat(Box.V, fmt.item_pad, Box.v, Box.v, fmt.box_color, fmt.item_color)](writer, align)
+                write_sep[
+                    _str_row_idx,
+                    ArrayFormat(
+                        fmt.box_color + Box.v,
+                        fmt.item_pad,
+                        "",
+                        fmt.box_color + fmt.item_pad,
+                        "",
+                        fmt.idx_color,
+                    ),
+                ](writer, 1, pad + 1)
 
-        write_sep[_str_rows, ArrayFormat("", fmt.item_pad, "\n", "\n", fmt.box_color)](writer, self._rows)
+            self.row(idx).format_to[
+                ArrayFormat(Box.V, fmt.item_pad, Box.v, Box.v, fmt.box_color, fmt.item_color)
+            ](writer, align)
+
+        write_sep[_str_rows, ArrayFormat("", fmt.item_pad, "\n", "\n", fmt.box_color)](
+            writer, self._rows
+        )
+
         @parameter
         if fmt.show_row_idx:
             write_sep[ArrayFormat(Box.rt, Box.h, "", "", fmt.box_color)](writer, 1, pad + 2)
-            write_sep[ArrayFormat(Box.hT, Box.h, Box.ht, Box.lt, fmt.box_color)](writer, self._cols, align)
+            write_sep[ArrayFormat(Box.hT, Box.h, Box.ht, Box.lt, fmt.box_color)](
+                writer, self._cols, align
+            )
         else:
-            write_sep[ArrayFormat(Box.rT, Box.h, Box.ht, Box.lt, fmt.box_color)](writer, self._cols, align)
+            write_sep[ArrayFormat(Box.rT, Box.h, Box.ht, Box.lt, fmt.box_color)](
+                writer, self._cols, align
+            )
 
     # +------( Operations )------+ #
     #
@@ -253,7 +313,7 @@ struct Table[T: Value, bnd: Tuple[SpanBound, SpanBound] = (SpanBound.Lap, SpanBo
         return self.__eq__[None](rhs)
 
     @always_inline("nodebug")
-    fn __eq__[__:None=None](self, rhs: Table[T, _, _]) -> Bool:
+    fn __eq__[__: None = None](self, rhs: Table[T, _, _]) -> Bool:
         if self._cols != rhs._cols or self._rows != rhs._rows:
             return False
         var size = self._cols * self._rows
@@ -267,7 +327,7 @@ struct Table[T: Value, bnd: Tuple[SpanBound, SpanBound] = (SpanBound.Lap, SpanBo
         return self.__ne__[None](rhs)
 
     @always_inline("nodebug")
-    fn __ne__[__:None=None](self, rhs: Table[T, _, _]) -> Bool:
+    fn __ne__[__: None = None](self, rhs: Table[T, _, _]) -> Bool:
         if self._cols != rhs._cols or self._rows != rhs._rows:
             return True
         var size = self._cols * self._rows
@@ -314,10 +374,10 @@ struct Table[T: Value, bnd: Tuple[SpanBound, SpanBound] = (SpanBound.Lap, SpanBo
         self = self._resize(cols, rows)
 
 
-
-
-from utils._format import write_to
-
+# +----------------------------------------------------------------------------------------------+ #
+# | Table Format
+# +----------------------------------------------------------------------------------------------+ #
+#
 struct TableFormat:
     var lbl: StringLiteral
     var lbl_color: StringLiteral
@@ -394,7 +454,6 @@ struct TableFormat:
     #             return StringRef(ptr + count, len(string))
     #         return value.unsafe_get[StringLiteral]()[]
 
-
     #     self.lbl = _get_ref(lbl)
     #     self.lbl_color = _get_ref(lbl_color)
     #     self.idx_color = _get_ref(idx_color)
@@ -410,8 +469,14 @@ struct TableFormat:
 
     @always_inline("nodebug")
     fn to_col_fmt(self) -> ArrayFormat:
-        return ArrayFormat(Box.v, self.item_pad, Box.v + "\n" + Box.v, Box.v, self.box_color, self.item_color)
+        return ArrayFormat(
+            Box.v, self.item_pad, Box.v + "\n" + Box.v, Box.v, self.box_color, self.item_color
+        )
 
     @staticmethod
-    fn icey(lbl: StringLiteral = "Icey", show_col_idx: Bool = True, show_row_idx: Bool = True) -> Self:
-        return Self(lbl, Color.clear, Color.none, Color.cyan, Color.clear, " ", show_col_idx, show_row_idx)
+    fn icey(
+        lbl: StringLiteral = "Icey", show_col_idx: Bool = True, show_row_idx: Bool = True
+    ) -> Self:
+        return Self(
+            lbl, Color.clear, Color.none, Color.cyan, Color.clear, " ", show_col_idx, show_row_idx
+        )

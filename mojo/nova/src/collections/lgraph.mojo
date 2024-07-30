@@ -8,7 +8,6 @@
 # | LGraph
 # +----------------------------------------------------------------------------------------------+ #
 #
-#
 @value
 struct LGraph(Stringable, Value, Drawable):
     """Layered Edge Graph. *This also contains meta data used in generation."""
@@ -27,23 +26,22 @@ struct LGraph(Stringable, Value, Drawable):
     var max_edge_out: Int
     var max_edge_weight: Int
     # var branch_count: Int
-    
+
     var history: Array[Int]
-    
+
     var nodes: Self.NodeTable
     var edges: Self.EdgeTable
-    
+
     var weights: Array[Int, SpanBound.Unsafe]
-    
+
     var _id2xy: Array[Ind2, SpanBound.Unsafe]
     var _id2lb: Array[Int, SpanBound.Unsafe]
     var _lb2id: Array[Int, SpanBound.Unsafe]
 
-
     # +------( Lifecycle )------+ #
     #
     fn __init__(inout self):
-        #--- initialize empty
+        # --- initialize empty
         self.width = 0
         self.depth = 0
         self.node_count = 0
@@ -57,7 +55,7 @@ struct LGraph(Stringable, Value, Drawable):
         self._id2xy = Array[Ind2, SpanBound.Unsafe]()
         self._id2lb = Array[Int, SpanBound.Unsafe]()
         self._lb2id = Array[Int, SpanBound.Unsafe]()
-    
+
     fn __init__(inout self, width: Int, depth: Int, owned history: Array[Int]):
         var node_capacity = width * depth
         self.width = width
@@ -69,33 +67,33 @@ struct LGraph(Stringable, Value, Drawable):
         self.history = history
         self.nodes = Self.NodeTable(width, depth)
         self.edges = Self.EdgeTable(width, node_capacity)
-        self.weights = Array[Int, SpanBound.Unsafe](size = node_capacity)
-        self._id2xy = Array[Ind2, SpanBound.Unsafe](size = node_capacity)
-        self._id2lb = Array[Int, SpanBound.Unsafe](size = node_capacity)
-        self._lb2id = Array[Int, SpanBound.Unsafe](size = node_capacity + 1)
+        self.weights = Array[Int, SpanBound.Unsafe](size=node_capacity)
+        self._id2xy = Array[Ind2, SpanBound.Unsafe](size=node_capacity)
+        self._id2lb = Array[Int, SpanBound.Unsafe](size=node_capacity)
+        self._lb2id = Array[Int, SpanBound.Unsafe](size=node_capacity + 1)
 
     # +------( Lookups )------+ #
     #
     @always_inline("nodebug")
     fn xy2id(self, xy: Ind2) -> Int:
         return self.nodes[xy] - 1
-    
+
     @always_inline("nodebug")
     fn xy2lb(self, xy: Ind2) -> Int:
         return self._id2lb[self.xy2id(xy)]
-    
+
     @always_inline("nodebug")
     fn lb2id(self, lb: Int) -> Int:
         return self._lb2id[lb]
-    
+
     @always_inline("nodebug")
     fn lb2xy(self, lb: Int) -> Ind2:
         return self._id2xy[self.lb2id(lb)]
-    
+
     @always_inline("nodebug")
     fn id2xy(self, id: Int) -> Ind2:
         return self._id2xy[id]
-    
+
     @always_inline("nodebug")
     fn id2lb(self, id: Int) -> Int:
         return self._id2lb[id]
@@ -144,7 +142,9 @@ struct LGraph(Stringable, Value, Drawable):
                         writer.write(", ")
                     else:
                         first = False
-                    writer.write(self.id2lb(id_), "<->", self.xy2lb(Ind2(_x, self.id2xy(id_)[1] + 1)))
+                    writer.write(
+                        self.id2lb(id_), "<->", self.xy2lb(Ind2(_x, self.id2xy(id_)[1] + 1))
+                    )
         writer.write("}")
 
     def draw(self, canvas: PythonObject):
@@ -157,8 +157,16 @@ struct LGraph(Stringable, Value, Drawable):
             var xy_ = self.id2xy(node_id)
             var _xy = Ind2(0, xy_[1] + 1)
             while self.next_neighbor(xy_, _xy):
-                var color = "#00" + hex(((self.edges[_xy[0], node_id][1] * 200) // self.max_edge_weight) + 16, prefix="") + "00"
-                canvas.create_line(xy_[0] * x_scale + x_offset, xy_[1] * y_scale + y_offset, _xy[0] * x_scale + x_offset, _xy[1] * y_scale + y_offset, fill=color)
+                var color = "#00" + hex(
+                    ((self.edges[_xy[0], node_id][1] * 200) // self.max_edge_weight) + 16, prefix=""
+                ) + "00"
+                canvas.create_line(
+                    xy_[0] * x_scale + x_offset,
+                    xy_[1] * y_scale + y_offset,
+                    _xy[0] * x_scale + x_offset,
+                    _xy[1] * y_scale + y_offset,
+                    fill=color,
+                )
                 _xy[0] += 1
 
     # +------( Operations )------+ #
@@ -168,10 +176,14 @@ struct LGraph(Stringable, Value, Drawable):
 
     fn __eq__(self, other: Self) -> Bool:
         # WIP
-        if self.node_count != other.node_count or self.edge_count != other.edge_count or self.max_edge_out != other.max_edge_out:
+        if (
+            self.node_count != other.node_count
+            or self.edge_count != other.edge_count
+            or self.max_edge_out != other.max_edge_out
+        ):
             return False
         return True
-        
+
     fn __ne__(self, other: Self) -> Bool:
         return not self.__eq__(other)
 
@@ -191,7 +203,7 @@ struct LGraph(Stringable, Value, Drawable):
         self.node_count += 1
         self.nodes[xy] = self.node_count
         self.depth = max(self.depth, xy[1] + 1)
-        
+
     @always_inline("nodebug")
     fn reach(inout self, xy_: Ind2, _x: Int):
         var _xy = Ind2(_x, xy_[1] + 1)
@@ -246,7 +258,8 @@ struct LGraph(Stringable, Value, Drawable):
             self.max_edge_out = max(edge_out, self.max_edge_out)
 
     fn finalize_nodes(inout self):
-        """Label nodes chronologically. Some rules can confuses the node labeling. This helps keep history consitent."""
+        """Label nodes chronologically. Some rules can confuses the node labeling. This helps keep history consitent.
+        """
         var l = 0
         for y in range(self.depth):
             for x in range(self.width):
@@ -256,6 +269,7 @@ struct LGraph(Stringable, Value, Drawable):
                     l += 1
                     self._lb2id[l] = i
                     self._id2lb[i] = l
+
 
 # @value
 # struct NeighborIter[mutability: Bool, //, lifetime: AnyLifetime[mutability].type, above: Bool, below: Bool]:

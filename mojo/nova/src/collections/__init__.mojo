@@ -15,6 +15,7 @@ from .lgraph import *
 from ..io import *
 from sys.intrinsics import _type_is_eq
 
+
 # homogeneous utils
 @always_inline("nodebug")
 fn _constrain_homo[T: Movable, *Ts: Movable]():
@@ -22,9 +23,11 @@ fn _constrain_homo[T: Movable, *Ts: Movable]():
     for i in range(_len[Ts]()):
         constrained[_type_is_eq[T, Ts[i]](), "non homogeneous types"]()
 
+
 @always_inline("nodebug")
 fn _constrain_len[capacity: Int, *Ts: Movable]():
     constrained[_len[Ts]() <= capacity, "variadic exceeds capacity"]()
+
 
 @always_inline("nodebug")
 fn _len[*Ts: Movable]() -> Int:

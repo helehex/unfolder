@@ -12,8 +12,12 @@ from algorithm import vectorize
 # | Vector
 # +----------------------------------------------------------------------------------------------+ #
 #
-#
-struct Vector[type: DType, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]", spc: AddressSpace = AddressSpace.GENERIC](Formattable, Sized, Value):
+struct Vector[
+    type: DType,
+    bnd: SpanBound = SpanBound.Lap,
+    fmt: ArrayFormat = "[, ]",
+    spc: AddressSpace = AddressSpace.GENERIC,
+](Formattable, Sized, Value):
     """A heap allocated vector.
 
     Parameters:
@@ -41,6 +45,7 @@ struct Vector[type: DType, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[
         """Creates a new vector and fills it with zero."""
         self._data = UnsafePointer[Scalar[type], spc].alloc(size)
         self._size = size
+
         @parameter
         if clear:
             self.clear()
@@ -48,14 +53,15 @@ struct Vector[type: DType, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[
     @always_inline("nodebug")
     fn __init__[width: Int = 1](inout self, *values: SIMD[type, width]):
         """Creates a new vector with the given values."""
-        self.__init__[False](size = len(values) * width)
+        self.__init__[False](size=len(values) * width)
         for idx in range(len(values)):
             self.unsafe_set[width](idx * width, values[idx])
 
     @always_inline("nodebug")
     fn __init__[width: Int = 1](inout self, *values: SIMD[type, width], size: Int):
         """Creates a new vector with the given values."""
-        self.__init__[False](size = size)
+        self.__init__[False](size=size)
+
         @parameter
         @always_inline("nodebug")
         fn _set[_width: Int](idx: Int):
@@ -64,6 +70,7 @@ struct Vector[type: DType, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[
                 self.unsafe_set[1](idx, values[(idx // width) % len(values)][idx % width])
             else:
                 self.unsafe_set[width](idx, values[(idx // width) % len(values)])
+
         vectorize[_set, width](size)
 
     @always_inline("nodebug")
@@ -72,23 +79,23 @@ struct Vector[type: DType, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[
         var size = 0
         for value in values:
             size += len(value[])
-        self.__init__[False](size = size)
+        self.__init__[False](size=size)
         var data = self._data
         for value in values:
             memcpy(data, value[]._data, value[]._size)
-            data += value[]._size    
+            data += value[]._size
 
     @always_inline("nodebug")
     fn __init__(inout self, *values: Vector[type, _, _, _], size: Int):
         """Creates a new vector by joining existing vectors."""
-        self.__init__[False](size = size)
+        self.__init__[False](size=size)
         var idx = 0
         while True:
             for value in values:
                 memcpy(self._data + idx, value[]._data, min(value[]._size, size - idx))
                 idx += value[]._size
                 if idx >= size:
-                    return     
+                    return
 
     @always_inline("nodebug")
     fn __copyinit__(inout self, other: Self):
@@ -117,6 +124,7 @@ struct Vector[type: DType, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[
         if width != 1 and bnd != SpanBound.Unsafe:
             if idx + width > self._size:
                 var result = SIMD[type, width]()
+
                 @parameter
                 for lane in range(width):
                     var idx2 = idx + lane
@@ -131,10 +139,13 @@ struct Vector[type: DType, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[
         return simd_load[width](self._data, idx)
 
     @always_inline("nodebug")
-    fn __setitem__[width: Int = 1, bnd: SpanBound = bnd](inout self, owned idx: Int, value: SIMD[type, width]):
+    fn __setitem__[
+        width: Int = 1, bnd: SpanBound = bnd
+    ](inout self, owned idx: Int, value: SIMD[type, width]):
         @parameter
         if width != 1 and bnd != SpanBound.Unsafe:
             if idx + width > self._size:
+
                 @parameter
                 for lane in range(width):
                     var idx2 = idx + lane
@@ -149,7 +160,9 @@ struct Vector[type: DType, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[
         simd_store[width](self._data, idx, value)
 
     @always_inline("nodebug")
-    fn __getitem__[bnd: SpanBound = bnd](ref[_]self, owned slice: Slice) -> VectorIter[type, bnd, fmt, __lifetime_of(self), spc]:
+    fn __getitem__[
+        bnd: SpanBound = bnd
+    ](ref [_]self, owned slice: Slice) -> VectorIter[type, bnd, fmt, __lifetime_of(self), spc]:
         bnd.adjust(slice, self._size)
         return VectorIter[type, bnd, fmt, __lifetime_of(self), spc](self._data, slice)
 
@@ -170,11 +183,11 @@ struct Vector[type: DType, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[
     # +------( Iterate )------+ #
     #
     @always_inline("nodebug")
-    fn __iter__(ref[_]self) -> VectorIter[type, bnd, fmt, __lifetime_of(self), spc]:
+    fn __iter__(ref [_]self) -> VectorIter[type, bnd, fmt, __lifetime_of(self), spc]:
         return self[:]
 
     @always_inline("nodebug")
-    fn __reversed__(ref[_]self) -> VectorIter[type, bnd, fmt, __lifetime_of(self), spc]:
+    fn __reversed__(ref [_]self) -> VectorIter[type, bnd, fmt, __lifetime_of(self), spc]:
         return self[::-1]
 
     # +------( Format )------+ #
@@ -211,15 +224,18 @@ struct Vector[type: DType, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[
         @always_inline("nodebug")
         fn _check[width: Int](offset: Int) -> Bool:
             return any(self.unsafe_get[width](offset) == value)
+
         return vectorize_stoping[_check, simdwidthof[type]()](self._size)
 
     @always_inline("nodebug")
     fn cast[target_type: DType](self) -> Vector[target_type, bnd, fmt, spc]:
-        var result = Vector[target_type, bnd, fmt, spc](size = len(self))
+        var result = Vector[target_type, bnd, fmt, spc](size=len(self))
+
         @parameter
         @always_inline("nodebug")
         fn _cast[width: Int](offset: Int):
             result.unsafe_set[width](offset, self.unsafe_get[width](offset).cast[target_type]())
+
         vectorize[_cast, min(simdwidthof[type](), simdwidthof[target_type]())](len(self))
         return result
 
@@ -237,6 +253,7 @@ struct Vector[type: DType, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[
         @always_inline("nodebug")
         fn _check[width: Int](offset: Int) -> Bool:
             return any(self.unsafe_get[width](offset) != 0)
+
         return vectorize_stoping[_check, simdwidthof[type]()](self._size)
 
     @always_inline("nodebug")
@@ -245,58 +262,83 @@ struct Vector[type: DType, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[
         @always_inline("nodebug")
         fn _check[width: Int](offset: Int) -> Bool:
             return any(self.unsafe_get[width](offset) == 0)
+
         return not vectorize_stoping[_check, simdwidthof[type]()](self._size)
 
     @always_inline("nodebug")
-    fn _binary_op[type_out: DType, func: fn(a: SIMD[type, _], b: SIMD[type, a.size])->SIMD[type_out, a.size]](self, rhs: Vector[type, _, _, _]) -> Vector[type_out, bnd, fmt, spc]:
+    fn _binary_op[
+        type_out: DType,
+        func: fn (a: SIMD[type, _], b: SIMD[type, a.size]) -> SIMD[type_out, a.size],
+    ](self, rhs: Vector[type, _, _, _]) -> Vector[type_out, bnd, fmt, spc]:
         debug_assert(len(self) == len(rhs), "size must be equal")
         var result: Vector[type_out, bnd, fmt, spc]
-        result.__init__[False](size = len(self))
+        result.__init__[False](size=len(self))
+
         @parameter
         @always_inline("nodebug")
         fn _run[width: Int](offset: Int):
-            result.unsafe_set[width](offset, func(self.unsafe_get[width](offset), rhs.unsafe_get[width](offset)))
+            result.unsafe_set[width](
+                offset, func(self.unsafe_get[width](offset), rhs.unsafe_get[width](offset))
+            )
+
         vectorize[_run, simdwidthof[type]()](len(self))
         return result
 
     @always_inline("nodebug")
-    fn _binary_op[type_out: DType, func: fn(a: SIMD[type, _], b: SIMD[type, a.size])->SIMD[type_out, a.size]](self, rhs: Scalar[type]) -> Vector[type_out, bnd, fmt, spc]:
+    fn _binary_op[
+        type_out: DType,
+        func: fn (a: SIMD[type, _], b: SIMD[type, a.size]) -> SIMD[type_out, a.size],
+    ](self, rhs: Scalar[type]) -> Vector[type_out, bnd, fmt, spc]:
         debug_assert(len(self) == len(rhs), "size must be equal")
         var result: Vector[type_out, bnd, fmt, spc]
-        result.__init__[False](size = len(self))
+        result.__init__[False](size=len(self))
+
         @parameter
         @always_inline("nodebug")
         fn _run[width: Int](offset: Int):
             result.unsafe_set[width](offset, func(self.unsafe_get[width](offset), rhs))
+
         vectorize[_run, simdwidthof[type]()](len(self))
         return result
 
     @always_inline("nodebug")
-    fn _binary_iop[func: fn(a: SIMD[type, _], b: SIMD[type, a.size])->SIMD[a.type, a.size]](inout self, rhs: Vector[type, _, _, _]):
+    fn _binary_iop[
+        func: fn (a: SIMD[type, _], b: SIMD[type, a.size]) -> SIMD[a.type, a.size]
+    ](inout self, rhs: Vector[type, _, _, _]):
         debug_assert(len(self) == len(rhs), "size must be equal")
+
         @parameter
         @always_inline("nodebug")
         fn _run[width: Int](offset: Int):
-            self.unsafe_set[width](offset, func(self.unsafe_get[width](offset), rhs.unsafe_get[width](offset)))
+            self.unsafe_set[width](
+                offset, func(self.unsafe_get[width](offset), rhs.unsafe_get[width](offset))
+            )
+
         vectorize[_run, simdwidthof[type]()](len(self))
 
     @always_inline("nodebug")
-    fn _binary_iop[func: fn(a: SIMD[type, _], b: SIMD[type, a.size])->SIMD[a.type, a.size]](inout self, rhs: Scalar[type]):
+    fn _binary_iop[
+        func: fn (a: SIMD[type, _], b: SIMD[type, a.size]) -> SIMD[a.type, a.size]
+    ](inout self, rhs: Scalar[type]):
         debug_assert(len(self) == len(rhs), "size must be equal")
+
         @parameter
         @always_inline("nodebug")
         fn _run[width: Int](offset: Int):
             self.unsafe_set[width](offset, func(self.unsafe_get[width](offset), rhs))
+
         vectorize[_run, simdwidthof[type]()](len(self))
 
     @always_inline("nodebug")
     fn all_eq(self, rhs: Vector[type, _, _, _]) -> Bool:
         if len(self) != len(rhs):
             return False
+
         @parameter
         @always_inline("nodebug")
         fn _check[width: Int](offset: Int) -> Bool:
             return any(self.unsafe_get[width](offset) != rhs.unsafe_get[width](offset))
+
         return not vectorize_stoping[_check, simdwidthof[type]()](len(self))
 
     @always_inline("nodebug")
@@ -312,7 +354,7 @@ struct Vector[type: DType, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[
         return self._binary_op[DType.bool, SIMD[type, _].__ne__](rhs)
 
     @always_inline("nodebug")
-    fn __eq__[__:None=None](self, rhs: Self) -> Bool:
+    fn __eq__[__: None = None](self, rhs: Self) -> Bool:
         return self.all_eq(rhs)
 
     @always_inline("nodebug")
@@ -328,7 +370,7 @@ struct Vector[type: DType, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[
         return self._binary_op[DType.bool, SIMD[type, _].__eq__](rhs)
 
     @always_inline("nodebug")
-    fn __ne__[__:None=None](self, rhs: Self) -> Bool:
+    fn __ne__[__: None = None](self, rhs: Self) -> Bool:
         return self.any_ne(rhs)
 
     @always_inline("nodebug")
@@ -440,7 +482,14 @@ struct Vector[type: DType, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[
 # TODO: this could be merged with ArraySpan/ArrayIter?
 #
 @value
-struct VectorIter[mutability: Bool, //, type: DType, bnd: SpanBound, fmt: ArrayFormat, lifetime: AnyLifetime[mutability].type, spc: AddressSpace](Formattable, Sized, Value):
+struct VectorIter[
+    mutability: Bool, //,
+    type: DType,
+    bnd: SpanBound,
+    fmt: ArrayFormat,
+    lifetime: AnyLifetime[mutability].type,
+    spc: AddressSpace,
+](Formattable, Sized, Value):
     """Span for Array.
 
     Parameters:
@@ -487,7 +536,7 @@ struct VectorIter[mutability: Bool, //, type: DType, bnd: SpanBound, fmt: ArrayF
         self.step = slice.step
 
     @always_inline("nodebug")
-    fn __init__(inout self, ref[lifetime, spc._value.value] src: Vector[type, bnd, fmt, spc]):
+    fn __init__(inout self, ref [lifetime, spc._value.value]src: Vector[type, bnd, fmt, spc]):
         self = VectorIter[type, bnd, fmt, lifetime, spc](src._data, src._size)
 
     # +------( Subscript )------+ #
@@ -511,7 +560,13 @@ struct VectorIter[mutability: Bool, //, type: DType, bnd: SpanBound, fmt: ArrayF
         return Self(self._src, start, size, step)
 
     @always_inline("nodebug")
-    fn __setitem__[lifetime: MutableLifetime](self: VectorIter[type, bnd, fmt, lifetime, spc], owned slice: Slice, value: VectorIter[type, _, _, _, _]):
+    fn __setitem__[
+        lifetime: MutableLifetime
+    ](
+        self: VectorIter[type, bnd, fmt, lifetime, spc],
+        owned slice: Slice,
+        value: VectorIter[type, _, _, _, _],
+    ):
         var sliced_self = self[slice]
         for idx in range(min(len(sliced_self), len(value))):
             self[idx] = value[idx]
@@ -557,19 +612,25 @@ struct VectorIter[mutability: Bool, //, type: DType, bnd: SpanBound, fmt: ArrayF
             return
 
         var _self = self
+
         @parameter
         @always_inline("nodebug")
         fn _write():
-            write_to(writer, fmt.item_color, str(Scalar[type](_self.__next__()[])))
+            writer.write(fmt.item_color, str(Scalar[type](_self.__next__()[])))
+
         write_sep[_write, fmt](writer, len(self))
 
     @always_inline("nodebug")
     fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter, align: Int):
         var _self = self
+
         @parameter
         @always_inline("nodebug")
         fn _str():
-            write_align[fmt.pad, fmt.item_color](writer, str(Scalar[type](_self.__next__()[])), align)
+            write_align[fmt.pad, fmt.item_color](
+                writer, str(Scalar[type](_self.__next__()[])), align
+            )
+
         write_sep[_str, fmt](writer, len(self))
 
     # +------( Operations )------+ #
@@ -587,7 +648,7 @@ struct VectorIter[mutability: Bool, //, type: DType, bnd: SpanBound, fmt: ArrayF
         return self.__eq__[None](rhs)
 
     @always_inline("nodebug")
-    fn __eq__[__:None=None](self, rhs: VectorIter[type, _, _, _, _]) -> Bool:
+    fn __eq__[__: None = None](self, rhs: VectorIter[type, _, _, _, _]) -> Bool:
         if len(self) != len(rhs):
             return False
         for idx in range(len(self)):
@@ -600,7 +661,7 @@ struct VectorIter[mutability: Bool, //, type: DType, bnd: SpanBound, fmt: ArrayF
         return self.__ne__[None](rhs)
 
     @always_inline("nodebug")
-    fn __ne__[__:None=None](self, rhs: VectorIter[type, _, _, _, _]) -> Bool:
+    fn __ne__[__: None = None](self, rhs: VectorIter[type, _, _, _, _]) -> Bool:
         if len(self) != len(rhs):
             return True
         for idx in range(len(self)):
@@ -635,6 +696,8 @@ struct VectorIter[mutability: Bool, //, type: DType, bnd: SpanBound, fmt: ArrayF
         self.fill(0)
 
     @always_inline("nodebug")
-    fn fill[lifetime: MutableLifetime, //](self: VectorIter[type, bnd, fmt, lifetime, spc], value: Scalar[type]):
+    fn fill[
+        lifetime: MutableLifetime, //
+    ](self: VectorIter[type, bnd, fmt, lifetime, spc], value: Scalar[type]):
         for item in self:
             item[] = value

@@ -6,7 +6,7 @@
 
 struct Box:
     """Box Characters."""
-    
+
     alias h = "─"
     alias H = "═"
 

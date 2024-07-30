@@ -34,11 +34,11 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
         self._span = Span[UInt8, lifetime](unsafe_ptr=ptr, len=len)
 
     @always_inline
-    fn __init__(inout self, ref[lifetime] string: String):
+    fn __init__(inout self, ref [lifetime]string: String):
         self._span = Span[UInt8, lifetime](unsafe_ptr=string.unsafe_ptr(), len=len(string))
 
     @always_inline
-    fn __init__(inout self, ref[lifetime] string: StringLiteral):
+    fn __init__(inout self, ref [lifetime]string: StringLiteral):
         self._span = Span[UInt8, lifetime](unsafe_ptr=string.unsafe_ptr(), len=len(string))
 
     # +------( Operations )------+ #
@@ -92,27 +92,33 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
     fn split(self, sep: String, max: Int) -> List[StringSpan[lifetime]]:
         var result = List[StringSpan[lifetime]](capacity=8)
         var remaining = self
+
         @parameter
-        fn _stop()->Bool:
+        fn _stop() -> Bool:
             return len(result) >= max
+
         _split[_stop](sep, result, remaining)
         return result
 
     fn split(self, sep: String, stop: String) -> List[StringSpan[lifetime]]:
         var result = List[StringSpan[lifetime]](capacity=8)
         var remaining = self
+
         @parameter
-        fn _stop()->Bool:
-            return remaining[:len(stop)] == stop
+        fn _stop() -> Bool:
+            return remaining[: len(stop)] == stop
+
         _split[_stop](sep, result, remaining)
         return result
 
     fn split(self, sep: String) -> List[StringSpan[lifetime]]:
         var result = List[StringSpan[lifetime]](capacity=8)
         var remaining = self
+
         @parameter
-        fn _stop()->Bool:
+        fn _stop() -> Bool:
             return False
+
         _split[_stop](sep, result, remaining)
         return result
 
@@ -120,7 +126,9 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
     fn __getitem__(self, owned slice: Slice) -> Self:
         SpanBound.Lap.adjust(slice, len(self._span))
         var ptr = self._span._data + slice.start.value()
-        return Span[UInt8, lifetime](unsafe_ptr=ptr, len=(slice.end.value() - slice.start.value()) // slice.step)
+        return Span[UInt8, lifetime](
+            unsafe_ptr=ptr, len=(slice.end.value() - slice.start.value()) // slice.step
+        )
 
     @always_inline
     fn format_to(self, inout writer: Formatter):
@@ -150,11 +158,13 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
 # +----------------------------------------------------------------------------------------------+ #
 #
 #
-fn _split[mut: Bool, lifetime: AnyLifetime[mut].type, //, stop_condition: fn()capturing->Bool](sep: String, inout result: List[StringSpan[lifetime]], inout remaining: StringSpan[lifetime]):
+fn _split[
+    mut: Bool, lifetime: AnyLifetime[mut].type, //, stop_condition: fn () capturing -> Bool
+](sep: String, inout result: List[StringSpan[lifetime]], inout remaining: StringSpan[lifetime]):
     var current = StringSpan[lifetime](remaining._span._data, 0)
 
     while True:
-        if remaining[:len(sep)] == sep:
+        if remaining[: len(sep)] == sep:
             result += current
             remaining._span._data += len(sep)
             remaining._span._len -= len(sep)
@@ -166,6 +176,6 @@ fn _split[mut: Bool, lifetime: AnyLifetime[mut].type, //, stop_condition: fn()ca
         remaining._span._data += 1
         remaining._span._len -= 1
         current._span._len += 1
-            
+
     current._span._len += len(remaining)
     result += current

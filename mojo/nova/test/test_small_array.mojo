@@ -1,3 +1,7 @@
+# x----------------------------------------------------------------------------------------------x #
+# | Helehex 2024
+# x----------------------------------------------------------------------------------------------x #
+
 from testing import *
 from nova.testing import *
 
@@ -14,10 +18,10 @@ def test_init():
     var rc = CopyCounter()
     var a = SmallArray[CopyCounter, 6]()
     a = SmallArray[CopyCounter, 6](rc, rc, rc, rc, rc, rc)
-    a = SmallArray[CopyCounter, 6](fill = rc)
-    var b = a # a = Array(a) # this fails right now, bug?
+    a = SmallArray[CopyCounter, 6](fill=rc)
+    var b = a  # a = Array(a) # this fails right now, bug?
     b = SmallArray[CopyCounter, 6](rc, rc, rc, rc, rc, rc)
-    b = SmallArray[CopyCounter, 6](fill = rc)
+    b = SmallArray[CopyCounter, 6](fill=rc)
     # b = SmallArray[CopyCounter, 6](a.__iter__())
     assert_false(rc)
 

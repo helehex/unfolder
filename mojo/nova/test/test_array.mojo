@@ -1,8 +1,13 @@
+# x----------------------------------------------------------------------------------------------x #
+# | Helehex 2024
+# x----------------------------------------------------------------------------------------------x #
+
 from testing import *
 from nova.testing import *
 
 from sys.intrinsics import _type_is_eq
 from nova import Array, SpanBound
+
 
 def main():
     test_equal()
@@ -36,14 +41,14 @@ def test_equal():
 def test_init():
     assert_true(_type_is_eq[__type_of(Array(1, 2, 3, 4)), Array[Int]]())
     assert_true(_type_is_eq[__type_of(Array(Array(0, 1))), Array[Array[Int]]]())
-    
+
     var rc = CopyCounter()
-    var a = Array[CopyCounter](size = 6)
+    var a = Array[CopyCounter](size=6)
     a = Array(rc, rc, rc, rc, rc, rc)
-    a = Array(rc, rc, size = 6)
-    var b = Array[CopyCounter](a) # a = Array(a) # this fails right now, bug?
+    a = Array(rc, rc, size=6)
+    var b = Array[CopyCounter](a)  # a = Array(a) # this fails right now, bug?
     b = Array[CopyCounter](a, a)
-    b = Array[CopyCounter](a, a, size = 10)
+    b = Array[CopyCounter](a, a, size=10)
     b = Array(a.__iter__())
     assert_false(rc)
 
@@ -81,7 +86,7 @@ def test_subscript():
     alias clamp = SpanBound.Clamp
     alias wrap = SpanBound.Wrap
 
-    a = Array(0,0,0,0,0,0)
+    a = Array(0, 0, 0, 0, 0, 0)
     a.__getitem__[clamp](-1) = 1
     a.__getitem__[clamp](3) = 2
     a.__getitem__[clamp](6) = 3
@@ -93,7 +98,7 @@ def test_subscript():
     assert_equal(a.__getitem__[clamp](6), 3)
     assert_equal(a.__getitem__[clamp](7), 3)
 
-    a = Array(0,0,0,0,0,0)
+    a = Array(0, 0, 0, 0, 0, 0)
     a.__getitem__[wrap](6) = 1
     a.__getitem__[wrap](3) = 2
     a.__getitem__[wrap](-1) = 3
@@ -105,7 +110,7 @@ def test_subscript():
     assert_equal(a.__getitem__[wrap](-1), 3)
     assert_equal(a.__getitem__[wrap](-7), 3)
 
-    a = Array(0,0,0,0,0,0)
+    a = Array(0, 0, 0, 0, 0, 0)
     var a1 = a.rebound[clamp]()
     a1[-1] = 1
     a1[3] = 2
@@ -117,7 +122,7 @@ def test_subscript():
     assert_equal(a1[5], 3)
     assert_equal(a1[6], 3)
     assert_equal(a1[7], 3)
-    
+
     var a2 = a.rebound[wrap]()
     a2[6] = 1
     a2[3] = 2
@@ -132,21 +137,21 @@ def test_subscript():
 
 
 def test_contains():
-    assert_true(Array(1,2,3).__contains__(3))
-    assert_false(Array(1,2,3).__contains__(4))
+    assert_true(Array(1, 2, 3).__contains__(3))
+    assert_false(Array(1, 2, 3).__contains__(4))
 
 
 def test_string():
     assert_equal(Array[Int]().__str__(), "[]")
     assert_equal(Array(1).__str__(), "[1]")
-    assert_equal(Array(1,2,3).__str__(), "[1, 2, 3]")
+    assert_equal(Array(1, 2, 3).__str__(), "[1, 2, 3]")
 
 
 def test_length():
     assert_equal(Array[Int]().__len__(), 0)
-    assert_equal(Array(1,2,3).__len__(), 3)
+    assert_equal(Array(1, 2, 3).__len__(), 3)
 
-    var a = Array(1,2,3,4,5,6)
+    var a = Array(1, 2, 3, 4, 5, 6)
     assert_equal(a.__len__(), 6)
 
     # x------ Span
@@ -228,8 +233,8 @@ def test_truthy():
     assert_false(Array[Array[Int]]().__bool__())
     assert_true(Array[Int](0).__bool__())
     assert_true(Array[Array[Int]](0).__bool__())
-    assert_true(Array[Int](1,2).__bool__())
-    assert_true(Array[Array[Int]](1,2).__bool__())
+    assert_true(Array[Int](1, 2).__bool__())
+    assert_true(Array[Array[Int]](1, 2).__bool__())
 
 
 def test_add():

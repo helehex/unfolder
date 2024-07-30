@@ -12,7 +12,7 @@
 @always_inline("nodebug")
 fn write_rep[T: Formattable](inout writer: Formatter, value: T, count: Int):
     for _ in range(count):
-        write_to(writer, value)
+        writer.write(value)
 
 
 # +----------------------------------------------------------------------------------------------+ #
@@ -21,14 +21,16 @@ fn write_rep[T: Formattable](inout writer: Formatter, value: T, count: Int):
 #
 #
 @always_inline("nodebug")
-fn write_align[pad: StringSpan[ImmutableStaticLifetime], item_color: String = Color.none](inout writer: Formatter, span: StringSpan[_], new_len: Int):
+fn write_align[
+    pad: StringSpan[ImmutableStaticLifetime], item_color: String = Color.none
+](inout writer: Formatter, span: StringSpan[_], new_len: Int):
     if len(span) > new_len:
         if new_len > 0:
             var es = max(new_len - 1, 0)
-            write_to(writer, item_color, span[:es], "‥")
+            writer.write(item_color, span[:es], "‥")
     else:
         write_rep(writer, pad, new_len - len(span))
-        write_to(writer, item_color, span)
+        writer.write(item_color, span)
 
 
 # +----------------------------------------------------------------------------------------------+ #
@@ -38,59 +40,71 @@ fn write_align[pad: StringSpan[ImmutableStaticLifetime], item_color: String = Co
 #
 @always_inline("nodebug")
 fn write_sep[fmt: ArrayFormat](inout writer: Formatter, len: Int):
-    write_to(writer, fmt.beg)
+    writer.write(fmt.beg)
     write_rep(writer, fmt.sep, len)
-    write_to(writer, fmt.end)
+    writer.write(fmt.end)
 
 
 @always_inline("nodebug")
-fn write_sep[write: fn ()capturing->None, fmt: ArrayFormat](inout writer: Formatter, count: Int):
-    alias sep_color = Color.clear if (bool(fmt.item_color) and not fmt.color) else fmt.color # remove bool()?
-    write_to(writer, fmt.color, fmt.beg)
-    
+fn write_sep[write: fn () capturing -> None, fmt: ArrayFormat](inout writer: Formatter, count: Int):
+    alias sep_color = Color.clear if (
+        bool(fmt.item_color) and not fmt.color
+    ) else fmt.color  # remove bool()?
+    writer.write(fmt.color, fmt.beg)
+
     for _ in range(count - 1):
         write()
-        write_to(writer, sep_color, fmt.sep)
+        writer.write(sep_color, fmt.sep)
     if count > 0:
         write()
 
-    write_to(writer, sep_color, fmt.end)
+    writer.write(sep_color, fmt.end)
     if fmt.color:
-        write_to(writer, Color.clear)
+        writer.write(Color.clear)
 
 
 @always_inline("nodebug")
-fn write_sep[write: fn (Int)capturing->None, fmt: ArrayFormat](inout writer: Formatter, count: Int):
-    alias sep_color = Color.clear if (bool(fmt.item_color) and not fmt.color) else fmt.color # remove bool()?
-    write_to(writer, fmt.color, fmt.beg)
-   
+fn write_sep[
+    write: fn (Int) capturing -> None, fmt: ArrayFormat
+](inout writer: Formatter, count: Int):
+    alias sep_color = Color.clear if (
+        bool(fmt.item_color) and not fmt.color
+    ) else fmt.color  # remove bool()?
+    writer.write(fmt.color, fmt.beg)
+
     var stop = count - 1
     for idx in range(stop):
         write(idx)
-        write_to(writer, sep_color, fmt.sep)
+        writer.write(sep_color, fmt.sep)
     if count > 0:
         write(stop)
 
-    write_to(writer, sep_color, fmt.end)
+    writer.write(sep_color, fmt.end)
     if fmt.color:
-        write_to(writer, Color.clear)
+        writer.write(Color.clear)
 
 
 @always_inline("nodebug")
-fn write_sep[read: fn ()capturing->String, fmt: ArrayFormat](inout writer: Formatter, count: Int, align: Int):
+fn write_sep[
+    read: fn () capturing -> String, fmt: ArrayFormat
+](inout writer: Formatter, count: Int, align: Int):
     @parameter
     @always_inline("nodebug")
     fn _str():
         write_align[fmt.pad, fmt.item_color](writer, read(), align)
+
     write_sep[_str, fmt](writer, count)
 
 
 @always_inline("nodebug")
-fn write_sep[read: fn (Int)capturing->String, fmt: ArrayFormat](inout writer: Formatter, count: Int, align: Int):
+fn write_sep[
+    read: fn (Int) capturing -> String, fmt: ArrayFormat
+](inout writer: Formatter, count: Int, align: Int):
     @parameter
     @always_inline("nodebug")
     fn _str(idx: Int):
         write_align[fmt.pad, fmt.item_color](writer, read(idx), align)
+
     write_sep[_str, fmt](writer, count)
 
 
@@ -100,9 +114,8 @@ fn write_sep[fmt: ArrayFormat](inout writer: Formatter, count: Int, align: Int):
     @always_inline("nodebug")
     fn _str():
         write_rep(writer, fmt.pad, align)
+
     write_sep[_str, fmt](writer, count)
-
-
 
 
 # struct SepFormat:
@@ -132,7 +145,7 @@ fn write_sep[fmt: ArrayFormat](inout writer: Formatter, count: Int, align: Int):
 #         self._pad = self._beg
 #         self._sep = self._pad + len(sep)
 #         self._end = self._sep + len(end)
-    
+
 #     fn __init__(inout self, beg: StringSpan[_], pad: StringSpan[_], sep: StringSpan[_], end: StringSpan[_]):
 #         self._value = String.format_sequence(beg, pad, sep, end)
 #         self._beg = len(beg)

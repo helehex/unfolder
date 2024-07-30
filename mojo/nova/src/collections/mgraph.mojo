@@ -8,11 +8,10 @@
 # | MGraph
 # +----------------------------------------------------------------------------------------------+ #
 #
-#
 @value
 struct MGraph(Stringable, Value, Drawable):
     """Adjacency Matrix Graph. *This also contains meta data used in generation."""
-    
+
     # +------[ Alias ]------+ #
     #
     alias NodeTable = Table[Int, (SpanBound.Unsafe, SpanBound.Unsafe), TableFormat(lbl="Nodes")]
@@ -22,7 +21,7 @@ struct MGraph(Stringable, Value, Drawable):
     #
     var history: Array[Int]
     """The graphs history of origin selection."""
-    
+
     var nodes: Self.NodeTable
     """The graphs node table."""
     var edges: Self.EdgeTable
@@ -47,7 +46,6 @@ struct MGraph(Stringable, Value, Drawable):
     var _lb2id: Array[Int]
     """converts a nodes label to it's original ID."""
 
-
     # +------( Lifecycle )------+ #
     #
     fn __init__(inout self):
@@ -65,7 +63,7 @@ struct MGraph(Stringable, Value, Drawable):
         self._id2xy = Array[Ind2]()
         self._id2lb = Array[Int]()
         self._lb2id = Array[Int]()
-    
+
     fn __init__(inout self, width: Int, depth: Int, owned history: Array[Int]):
         var node_capacity = width * depth
         self.width = width
@@ -77,34 +75,34 @@ struct MGraph(Stringable, Value, Drawable):
         self.history = history
         self.nodes = Self.NodeTable(width, depth)
         self.edges = Self.EdgeTable(node_capacity, node_capacity)
-        self.weights = Array[Int](size = node_capacity)
-        self.bounds = Array[Ind2](size = node_capacity)
-        self._id2xy = Array[Ind2](size = node_capacity)
-        self._id2lb = Array[Int](size = node_capacity)
-        self._lb2id = Array[Int](size = node_capacity + 1)
+        self.weights = Array[Int](size=node_capacity)
+        self.bounds = Array[Ind2](size=node_capacity)
+        self._id2xy = Array[Ind2](size=node_capacity)
+        self._id2lb = Array[Int](size=node_capacity)
+        self._lb2id = Array[Int](size=node_capacity + 1)
 
     # +------( Lookups )------+ #
     #
     @always_inline("nodebug")
     fn xy2id(self, xy: Ind2) -> Int:
         return self.nodes[xy] - 1
-    
+
     @always_inline("nodebug")
     fn xy2lb(self, xy: Ind2) -> Int:
         return self._id2lb[self.xy2id(xy)]
-    
+
     @always_inline("nodebug")
     fn lb2id(self, lb: Int) -> Int:
         return self._lb2id[lb]
-    
+
     @always_inline("nodebug")
     fn lb2xy(self, lb: Int) -> Ind2:
         return self._id2xy[self.lb2id(lb)]
-    
+
     @always_inline("nodebug")
     fn id2xy(self, id: Int) -> Ind2:
         return self._id2xy[id]
-    
+
     @always_inline("nodebug")
     fn id2lb(self, id: Int) -> Int:
         return self._id2lb[id]
@@ -150,7 +148,8 @@ struct MGraph(Stringable, Value, Drawable):
         for y in range(self.node_count):
             var start = self.bounds[y][0]
             var stop = self.bounds[y][1]
-            if start < y: start = y
+            if start < y:
+                start = y
             for x in range(start, stop):
                 if self.edges[x, y] > 0:
                     if not first:
@@ -171,18 +170,30 @@ struct MGraph(Stringable, Value, Drawable):
             var _id = self.bounds[id_][0]
             while self.next_neighbor(id_, _id):
                 var _xy = self.id2xy(_id)
-                var color = "#00" + hex(((self.edges[_id, id_] * 200) // self.max_edge_weight) + 16, prefix="") + "00"
-                canvas.create_line(xy_[0] * x_scale + x_offset, xy_[1] * y_scale + y_offset, _xy[0] * x_scale + x_offset, _xy[1] * y_scale + y_offset, fill=color)
+                var color = "#00" + hex(
+                    ((self.edges[_id, id_] * 200) // self.max_edge_weight) + 16, prefix=""
+                ) + "00"
+                canvas.create_line(
+                    xy_[0] * x_scale + x_offset,
+                    xy_[1] * y_scale + y_offset,
+                    _xy[0] * x_scale + x_offset,
+                    _xy[1] * y_scale + y_offset,
+                    fill=color,
+                )
                 _id += 1
 
     # +------( Operations )------+ #
     #
     fn __eq__(self, other: Self) -> Bool:
         # WIP
-        if self.node_count != other.node_count or self.edge_count != other.edge_count or self.max_edge_out != other.max_edge_out:
+        if (
+            self.node_count != other.node_count
+            or self.edge_count != other.edge_count
+            or self.max_edge_out != other.max_edge_out
+        ):
             return False
         return True
-        
+
     fn __ne__(self, other: Self) -> Bool:
         return not self.__eq__(other)
 
@@ -204,7 +215,8 @@ struct MGraph(Stringable, Value, Drawable):
 
     @always_inline("nodebug")
     fn reach(inout self, src: Int, dst: Int, depth: Int):
-        """Creates an edge from the src node to the dst node. Touches the dst node if it has not been touched yet."""
+        """Creates an edge from the src node to the dst node. Touches the dst node if it has not been touched yet.
+        """
         var src_xy = Ind2(src, depth - 1)
         var dst_xy = Ind2(dst, depth)
         if self.nodes[dst_xy] == 0:
@@ -214,8 +226,8 @@ struct MGraph(Stringable, Value, Drawable):
         var i_: Int = self.nodes[src_xy] - 1
         var _i: Int = self.nodes[dst_xy] - 1
         self.weights[_i] += 1
-        self.edges[Ind2(_i,i_)] += 1
-        self.edges[Ind2(i_,_i)] += 1
+        self.edges[Ind2(_i, i_)] += 1
+        self.edges[Ind2(i_, _i)] += 1
 
     @always_inline("nodebug")
     fn next_neighbor(self, id_: Int, inout _id: Int) -> Bool:
@@ -261,7 +273,8 @@ struct MGraph(Stringable, Value, Drawable):
             self.bounds[y] = Ind2(start, limit + 1)
 
     fn finalize_nodes(inout self):
-        """Label nodes chronologically. Some rules can confuses the node labeling. This helps keep history consitent."""
+        """Label nodes chronologically. Some rules can confuses the node labeling. This helps keep history consitent.
+        """
         var l = 0
         for y in range(self.depth):
             for x in range(self.width):

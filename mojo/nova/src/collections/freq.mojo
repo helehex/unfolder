@@ -10,7 +10,6 @@ from collections.dict import DictEntry, _DictEntryIter
 # | Freq
 # +----------------------------------------------------------------------------------------------+ #
 #
-#
 struct Freq[T: StringableKeyElement](Formattable, Sized, Boolable, Value):
     """Frequency."""
 
@@ -66,14 +65,14 @@ struct Freq[T: StringableKeyElement](Formattable, Sized, Boolable, Value):
         return self.__str__()
 
     fn format_to(self, inout writer: Formatter):
-        write_to(writer, str(self.total), "{")
+        writer.write(str(self.total), "{")
         var written = 0
         for item in self:
-            write_to(writer, str(item[].key), ": ", str(item[].value))
+            writer.write(str(item[].key), ": ", str(item[].value))
             if written < len(self) - 1:
-                write_to(writer, ", ")
+                writer.write(", ")
             written += 1
-        write_to(writer, "}")
+        writer.write("}")
 
     fn __iter__(ref [_]self: Self) -> _DictEntryIter[T, Int, __lifetime_of(self)]:
         return _DictEntryIter(0, 0, self._data)

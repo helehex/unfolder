@@ -1,5 +1,7 @@
-"""
-Contains rules, and the means to follow them.
+# x----------------------------------------------------------------------------------------------x #
+# | Helehex 2024
+# x----------------------------------------------------------------------------------------------x #
+"""Contains rules, and the means to follow them.
 
 Example: `follow[unfold]()`
 """
@@ -7,24 +9,30 @@ Example: `follow[unfold]()`
 from collections import List
 from src import *
 
-# +------ Follow a rule ------+ #
+
+# +----------------------------------------------------------------------------------------------+ #
+# | Follow
+# +----------------------------------------------------------------------------------------------+ #
 #
-fn follow[rule: fn(MGraph, Int)->MGraph](owned *history: Int) -> MGraph:
+fn follow[rule: fn (MGraph, Int) -> MGraph](owned *history: Int) -> MGraph:
     """Follow a `rule` with respect to an origin `history`, and return the resulting graph."""
     return follow[rule](history)
 
-fn follow[rule: fn(MGraph, Int)->MGraph](history: Array[Int]) -> MGraph:
+
+fn follow[rule: fn (MGraph, Int) -> MGraph](history: Array[Int]) -> MGraph:
     """Follow a `rule` with respect to an origin `history`, and return the resulting graph."""
     var result = MGraph()
     for i in range(len(history)):
         result = rule(result, history[i])
     return result^
 
-fn follow[rule: fn(LGraph, Int)->LGraph](owned *history: Int) -> LGraph:
+
+fn follow[rule: fn (LGraph, Int) -> LGraph](owned *history: Int) -> LGraph:
     """Follow a `rule` with respect to an origin `history`, and return the resulting graph."""
     return follow[rule](history)
 
-fn follow[rule: fn(LGraph, Int)->LGraph](history: Array[Int]) -> LGraph:
+
+fn follow[rule: fn (LGraph, Int) -> LGraph](history: Array[Int]) -> LGraph:
     """Follow a `rule` with respect to an origin `history`, and return the resulting graph."""
     var result = LGraph()
     for i in range(len(history)):
@@ -32,19 +40,21 @@ fn follow[rule: fn(LGraph, Int)->LGraph](history: Array[Int]) -> LGraph:
     return result^
 
 
-#------ Unfolder Rule ------#
-#---
-#--- nodes are considered self-edges
-#---
-#--- Starting at node `N` in graph `G`, and using un-directed edges, track all possible paths which end on a repeated node.
-#--- label the new nodes as you walk `[old label, steps to reach]`.
-#--- we'll call the repeated nodes `l`, and `l+`. We treat `l+` as a new node.
-#--- Combine all paths using the new labels to get `G~N`
-#---
+# +----------------------------------------------------------------------------------------------+ #
+# | Unfolder Matrix Graph
+# +----------------------------------------------------------------------------------------------+ #
+#
+# +--- nodes are considered self-edges
+# +---
+# +--- Starting at node `N` in graph `G`, and using un-directed edges, track all possible paths which end on a repeated node.
+# +--- label the new nodes as you walk `[old label, steps to reach]`.
+# +--- we'll call the repeated nodes `l`, and `l+`. We treat `l+` as a new node.
+# +--- Combine all paths using the new labels to get `G~N`
+# +---
 fn unfold(seed: MGraph, origin: Int) -> MGraph:
     """Unfold the seed graph with respect to an origin node."""
 
-     # width of the resulting graphs node table is the node count of the seed graph
+    # width of the resulting graphs node table is the node count of the seed graph
     var width: Int = seed.node_count
     var result = MGraph(max(width, 1), width + 1, seed.history + origin)
 
@@ -57,41 +67,43 @@ fn unfold(seed: MGraph, origin: Int) -> MGraph:
     # else, this graph has reached step > 1; start crawling
     var depth: Int = 0
     var max_depth: Int = 0
-    
+
     # add origin node
     var _o: Int = seed.lb2id(origin)
     result.touch(Ind2(_o, 0))
-    
-    #--- start crawling the seed graph, adding new nodes to this graph along the way
-    #---
-    #--- when a node with at least one child which doesnt loop is reached, that childs index will be pushed onto the trace, and used to set the indexed mask true
-    #--- when a node is reached where every child forms a loop, it's index will be popped from the trace, and used to set the indexed mask false
-    #---
-    var trace: List[Int] = List[Int](capacity = depth)
-    var mask = Array[Int](size = width)   # mask contains the depth the trace was at when the index was pushed, +1. if it has not been reached, 0.
-    var edge_start: Int = 0               # the edge to start looping at
-    var edge_limit: Int = 0               # the edge to stop looping at
+
+    # --- start crawling the seed graph, adding new nodes to this graph along the way
+    # ---
+    # --- when a node with at least one child which doesnt loop is reached, that childs index will be pushed onto the trace, and used to set the indexed mask true
+    # --- when a node is reached where every child forms a loop, it's index will be popped from the trace, and used to set the indexed mask false
+    # ---
+    var trace: List[Int] = List[Int](capacity=depth)
+    var mask = Array[Int](
+        size=width
+    )  # mask contains the depth the trace was at when the index was pushed, +1. if it has not been reached, 0.
+    var edge_start: Int = 0  # the edge to start looping at
+    var edge_limit: Int = 0  # the edge to stop looping at
     var o_: Int = _o
 
-    @parameter #--- check for continuation
+    @parameter  # --- check for continuation
     @always_inline("nodebug")
     fn _check() -> Bool:
         if mask[_o] > 0:
             result.reach(o_, _o, depth)
-            return False # loop encountered, return false
-        return True # keeps going, return true
+            return False  # loop encountered, return false
+        return True  # keeps going, return true
 
-    @parameter #--- search through connected edges
+    @parameter  # --- search through connected edges
     @always_inline("nodebug")
     fn _search() -> Bool:
         while _o < edge_limit:
-            if seed.edges[Ind2(_o,o_)] > 0 and _check():
+            if seed.edges[Ind2(_o, o_)] > 0 and _check():
                 result.reach(o_, _o, depth)
-                return False # check succeeded, continue deeper
+                return False  # check succeeded, continue deeper
             _o += 1
-        return True # all checks must fail to trigger a pop
+        return True  # all checks must fail to trigger a pop
 
-    @parameter #--- push trace, and update mask
+    @parameter  # --- push trace, and update mask
     @always_inline("nodebug")
     fn _push():
         o_ = _o
@@ -102,31 +114,31 @@ fn unfold(seed: MGraph, origin: Int) -> MGraph:
         edge_start = seed.bounds[o_][0]
         edge_limit = seed.bounds[o_][1]
         _o = edge_start
-        
-    @parameter #--- pop trace, and update mask
+
+    @parameter  # --- pop trace, and update mask
     @always_inline("nodebug")
     fn _pop():
         max_depth = max(depth, max_depth)  # check for max depth before pop
-        depth -= 1                         # decrement depth
-        mask[o_] = 0                       # set mask back to 0
-        o_ = trace[max(0,depth-1)]
-        _o = trace.pop() + 1          # .. + 1 is so dont keep repeating the same _o after you pop!
+        depth -= 1  # decrement depth
+        mask[o_] = 0  # set mask back to 0
+        o_ = trace[max(0, depth - 1)]
+        _o = trace.pop() + 1  # .. + 1 is so dont keep repeating the same _o after you pop!
         edge_start = seed.bounds[o_][0]
         edge_limit = seed.bounds[o_][1]
 
-    #--- main crawl loop
+    # --- main crawl loop
     _push()
     while depth > 0:
         if _search():
             _pop()
         else:
             _push()
-    
-    _ = trace # keep trace and mask alive for the duration of the crawl
+
+    _ = trace  # keep trace and mask alive for the duration of the crawl
     _ = mask  # ^
-    #---
-    #---
-    #------ end cawl
+    # ---
+    # ---
+    # ------ end cawl
 
     # TODO debug / estimates error
     result.depth = max_depth + 1
@@ -134,10 +146,14 @@ fn unfold(seed: MGraph, origin: Int) -> MGraph:
     return result^
 
 
+# +----------------------------------------------------------------------------------------------+ #
+# | Unfolder Layer Graph
+# +----------------------------------------------------------------------------------------------+ #
+#
 fn unfold_lg(seed: LGraph, origin: Int) -> LGraph:
     """Unfold the seed graph with respect to an origin node."""
 
-     # width of the resulting graphs node table is the node count of the seed graph
+    # width of the resulting graphs node table is the node count of the seed graph
     var width: Int = seed.node_count
     var result = LGraph(max(width, 1), width + 1, seed.history + origin)
 
@@ -155,12 +171,12 @@ fn unfold_lg(seed: LGraph, origin: Int) -> LGraph:
     # trace describes the current walk through the seed graph.
     # it is a stack of x values corresponding to edges followed in the seed graph.
     # a positive x means you walked down the seed graph, a negative x means you walked up the seed graph
-    var trace = List[Ind2](capacity = width)
-    
+    var trace = List[Ind2](capacity=width)
+
     # mask contains booleans for every node in the seed graph
     # it gets set true if the node-id was reached in the current walk
-    var mask = Vector[DType.bool, SpanBound.Unsafe](size = width)
-    
+    var mask = Vector[DType.bool, SpanBound.Unsafe](size=width)
+
     # add origin node
     var _lb = origin - 1
     var _xy = seed.lb2xy(_lb + 1)
@@ -179,8 +195,8 @@ fn unfold_lg(seed: LGraph, origin: Int) -> LGraph:
         trace.append(xy_)
         _xy = Ind2(0, xy_[1] - 1)
         mask[lb_] = True
-    
-    #--- pop trace, and update mask
+
+    # --- pop trace, and update mask
     @parameter
     @always_inline("nodebug")
     fn _pop():
@@ -206,7 +222,7 @@ fn unfold_lg(seed: LGraph, origin: Int) -> LGraph:
                 return True
         return False
 
-    #--- main crawl loop
+    # --- main crawl loop
     _push()
     while len(trace) > 0:
         if _search():
@@ -221,11 +237,19 @@ fn unfold_lg(seed: LGraph, origin: Int) -> LGraph:
     result.finalize()
     return result^
 
+
+# +----------------------------------------------------------------------------------------------+ #
+# | Unfolder Fast Breadth Layer Graph
+# +----------------------------------------------------------------------------------------------+ #
+#
+# +--- This doesnt work
+#
 fn unfold_fast_breadth_lg[self_edge: Bool = True](seed: LGraph, origin: Int) -> LGraph:
     """Unfold the seed graph with respect to an origin node. (fast breadth) *This does not work."""
 
     # if the seed graph is empty or does not contain the origin, give a single implicit self-loop.
     if seed.node_count <= 0 or seed.node_count < origin or origin < 1:
+
         @parameter
         if self_edge:
             var result = LGraph(1, 1, seed.history + origin)
@@ -243,8 +267,8 @@ fn unfold_fast_breadth_lg[self_edge: Bool = True](seed: LGraph, origin: Int) -> 
     var end = True
 
     # sets of integers representing the frequency of nodes reached for each layer in the new graph
-    var curr_trace = Array[Freq[Int]](size = seed.node_count)
-    var next_trace = Array[Freq[Int]](size = seed.node_count)
+    var curr_trace = Array[Freq[Int]](size=seed.node_count)
+    var next_trace = Array[Freq[Int]](size=seed.node_count)
 
     # add origin node
     var xy = Ind2(origin, 0)
@@ -271,12 +295,13 @@ fn unfold_fast_breadth_lg[self_edge: Bool = True](seed: LGraph, origin: Int) -> 
         result.reach(xy, xy[0])
     curr_trace[xy[0]].total = 1
     _crawl_edges[False](curr_trace[xy[0]])
-    
+
     @parameter
     @always_inline("nodebug")
     fn _crawl_node(curr_freq: Freq[Int]):
         if curr_freq:
             _crawl_edges[True](curr_freq)
+
             @parameter
             if self_edge:
                 result.reach(xy, xy[0])
@@ -286,7 +311,8 @@ fn unfold_fast_breadth_lg[self_edge: Bool = True](seed: LGraph, origin: Int) -> 
     # crawl seed graph
     while not end:
         end = True
-        xy[0] = 0; xy[1] += 1
+        xy[0] = 0
+        xy[1] += 1
         swap(curr_trace, next_trace)
         for item in next_trace:
             item[].clear()
@@ -318,9 +344,9 @@ fn unfold_fast_breadth_lg[self_edge: Bool = True](seed: LGraph, origin: Int) -> 
 # #--- max_edge_out = GStep - 1
 # #---
 # fn unfold_loop(seed: Graph, origin: Int) -> Graph: #------ unfold the seed graph with respect to an origin node
-    
+
 #     var width: Int = seed.node_count # width of the resulting graph = node count of this graph
-    
+
 #     # if the seed graph is empty or does not contain origin, give the single (implicit) self-loop. (step 1)
 #     if width <= 0 or width < origin or origin < 1:
 #         return Graph(
@@ -330,31 +356,31 @@ fn unfold_fast_breadth_lg[self_edge: Bool = True](seed: LGraph, origin: Int) -> 
 #             Array[Int](1), #--------------------- weights
 #             [Ind2(0,0)] #--------- _xy_id
 #             )
-    
+
 #     # this graph has reached step > 1, start the crawling process
 #     var depth: Int = 0
 #     var max_depth: Int = 0
 #     var node_count: Int = 0
 #     var edge_count: Int = 0
-    
+
 #     # estimate size of resulting graph
 #     var depth_est: Int = width + 1          #? edge estimate~ < seed edge_count * 3
 #     var node_est: Int = width * depth_est   #? node estimate~ < seed count * 3
-    
+
 #     # create new containers for the resulting graph
 #     var nodes = Table[Int](width, depth_est)
 #     var edges = Table[Int](node_est, node_est)
 #     var weights = Array[Int](size = node_est)
 #     var _xy_id = Array[Ind2](size = node_est)
-    
+
 #     # add origin node
 #     var _o: Int = seed.id_lb(origin)
-    
+
 #     _xy_id[node_count] = Ind2(_o,0)
 #     node_count += 1
 #     nodes[Ind2(_o,0)] = node_count
 #     weights[0] += 1
-    
+
 #     #--- start crawling the seed graph, adding new nodes to this graph along the way
 #     #---
 #     #--- when a node with at least one child which doesnt loop is reached, that childs index will be pushed onto the trace, and used to set the indexed mask true
@@ -365,7 +391,7 @@ fn unfold_fast_breadth_lg[self_edge: Bool = True](seed: LGraph, origin: Int) -> 
 #     var edge_start: Int = 0               # the edge to start looping at
 #     var edge_limit: Int = 0               # the edge to stop looping at
 #     var o_: Int = _o
-    
+
 #     @parameter
 #     fn _reach(): # the walk did not touch itself, try adding the reached node
 #         var p_: Ind2 = Ind2(o_, depth - 1)
@@ -401,7 +427,7 @@ fn unfold_fast_breadth_lg[self_edge: Bool = True](seed: LGraph, origin: Int) -> 
 #                 return False # check succeeded, continue deeper
 #             _o += 1
 #         return True # all checks must fail to trigger a pop
-    
+
 #     @parameter #--- push trace, and update mask
 #     fn _push():
 #         o_ = _o
@@ -412,7 +438,7 @@ fn unfold_fast_breadth_lg[self_edge: Bool = True](seed: LGraph, origin: Int) -> 
 #         edge_start = seed.bounds[o_][0]
 #         edge_limit = seed.bounds[o_][1]
 #         _o = edge_start
-        
+
 #     @parameter #--- pop trace, and update mask
 #     fn _pop():
 #         max_depth = max(depth, max_depth)  # check for max depth before pop
@@ -439,7 +465,7 @@ fn unfold_fast_breadth_lg[self_edge: Bool = True](seed: LGraph, origin: Int) -> 
 #     #------ end cawl
 
 #     # TODO debug / estimates error
-    
+
 #     return Graph(
 #         seed.history.append(origin),
 #         Table[Int](width, depth, nodes),

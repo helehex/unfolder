@@ -1,6 +1,11 @@
+# x----------------------------------------------------------------------------------------------x #
+# | Helehex 2024
+# x----------------------------------------------------------------------------------------------x #
+
 from sys import argv
 from src import *
 import rules
+
 
 def main():
     var args = argv()
@@ -25,7 +30,7 @@ def main():
             except e:
                 history = Array[Int](1)
                 print("error: ", e)
-    
+
     alias rule = rules.unfold_lg
     var result = rules.follow[rule](history)
 
@@ -38,10 +43,9 @@ def main():
         draw_graph(result, str(result.history))
 
 
-
-
 from python import Python
 from src.collections import LGraph
+
 
 def draw_graph[T: Drawable](graph: T, title: String):
     var tk = Python.import_module("tkinter")
