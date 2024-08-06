@@ -99,7 +99,7 @@ struct Table[
 
     @always_inline("nodebug")
     fn __getitem__(
-        self, owned col: Slice, owned row: Int
+        ref [_]self, owned col: Slice, owned row: Int
     ) -> ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)]:
         bnd[0].adjust(col, self._cols)
         bnd[1].adjust(row, self._rows)
@@ -112,7 +112,7 @@ struct Table[
 
     @always_inline("nodebug")
     fn __getitem__(
-        self, owned col: Int, owned row: Slice
+        ref [_]self, owned col: Int, owned row: Slice
     ) -> ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)]:
         bnd[0].adjust(col, self._cols)
         bnd[1].adjust(row, self._rows)
@@ -124,7 +124,7 @@ struct Table[
         )
 
     @always_inline("nodebug")
-    fn row(self, idx: Int) -> ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)]:
+    fn row(ref [_]self, idx: Int) -> ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)]:
         var start = idx * self._cols
         var stop = start + self._cols
         return ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)](
@@ -132,7 +132,7 @@ struct Table[
         )
 
     @always_inline("nodebug")
-    fn col(self, idx: Int) -> ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)]:
+    fn col(ref [_]self, idx: Int) -> ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)]:
         var start = idx
         var stop = self._cols * self._rows
         var step = self._cols

@@ -51,7 +51,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         self.__init__(items)
 
     @always_inline("nodebug")
-    fn __init__(inout self, items: VariadicListMem[T, _, _]):
+    fn __init__(inout self, items: VariadicListMem[T, _]):
         """Creates a new array with the given items."""
         self.__init__[False](size=len(items))
         for idx in range(self._size):

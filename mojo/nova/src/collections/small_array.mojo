@@ -51,7 +51,7 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
         self = Self(storage=elems^)
 
     @always_inline("nodebug")
-    fn __init__(inout self, *, owned storage: VariadicListMem[T, _, _]):
+    fn __init__(inout self, *, owned storage: VariadicListMem[T, _]):
         debug_assert(len(storage) == size, "Elements must be of length size")
         self.__init__[False]()
 
