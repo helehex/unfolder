@@ -91,8 +91,8 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
                     _copy(self._data + idx, array[]._data, size - idx)
                     return
             empty = idx == 0
-        __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
         self._data.free()
+        __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
         self = Self(size=size)
 
     # @always_inline("nodebug")
@@ -307,8 +307,8 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         new_array.__init__[False](size=len(self) + 1)
         _move(new_array._data, self._data, len(self))
         _copy(new_array._data + len(self), item)
-        __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
         self._data.free()
+        __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
         self = new_array
 
     @always_inline("nodebug")
@@ -317,8 +317,8 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         new_array.__init__[False](size=len(self) + len(items))
         _move(new_array._data, self._data, len(self))
         _copy(new_array._data + len(self), items)
-        __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
         self._data.free()
+        __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
         self = new_array
 
     # +------( Insert )------+ #
@@ -351,8 +351,8 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         _move(new_array._data, self._data, idx)
         _copy(new_array._data + idx, item)
         _move(new_array._data + idx + 1, self._data + idx, self._size - idx)
-        __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
         self._data.free()
+        __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
         self = new_array
 
     @always_inline("nodebug")
@@ -363,8 +363,8 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         _move(new_array._data, self._data, idx)
         _copy(new_array._data + idx, items)
         _move(new_array._data + idx + len(items), self._data + idx, self._size - idx)
-        __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
         self._data.free()
+        __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
         self = new_array
 
     # +------( Remove )------+ #
@@ -416,8 +416,8 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         new_array.__init__[False](size=size)
         _move(new_array._data, self._data, self._size)
         _init(new_array._data + self._size, size - self._size)
-        __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
         self._data.free()
+        __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(self))
         self = new_array
 
     @always_inline("nodebug")

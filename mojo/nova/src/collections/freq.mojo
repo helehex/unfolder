@@ -3,7 +3,7 @@
 # x----------------------------------------------------------------------------------------------x #
 """Nova Frequency."""
 
-from collections.dict import DictEntry, _DictEntryIter
+from collections.dict import Dict, DictEntry, _DictEntryIter
 
 
 # +----------------------------------------------------------------------------------------------+ #

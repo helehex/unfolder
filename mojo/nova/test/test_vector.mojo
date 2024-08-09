@@ -6,6 +6,7 @@ from testing import *
 from nova.testing import *
 
 from sys.intrinsics import _type_is_eq
+from sys import has_neon
 from nova import Vector
 
 

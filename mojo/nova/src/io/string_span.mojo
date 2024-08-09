@@ -3,6 +3,7 @@
 # x----------------------------------------------------------------------------------------------x #
 """Nova StringSpan."""
 
+from memory import memcpy
 from utils import Span
 
 

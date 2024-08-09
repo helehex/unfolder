@@ -6,7 +6,6 @@
 Example: `follow[unfold]()`
 """
 
-from collections import List
 from src import *
 
 

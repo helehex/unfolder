@@ -3,6 +3,7 @@
 # x----------------------------------------------------------------------------------------------x #
 """Nova Table."""
 
+from collections import Optional
 from ..memory import _init, _copy, _move, _take, _del
 from ..io import Box, Color
 from .array import ArrayIter

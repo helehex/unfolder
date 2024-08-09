@@ -3,9 +3,10 @@
 # x----------------------------------------------------------------------------------------------x #
 """Nova Vector."""
 
+from algorithm import vectorize
+from sys import triple_is_nvidia_cuda
 from ..memory import memclr, memset, memcpy, simd_store, simd_load
 from ..algorithm import vectorize_stoping
-from algorithm import vectorize
 
 
 # +----------------------------------------------------------------------------------------------+ #
