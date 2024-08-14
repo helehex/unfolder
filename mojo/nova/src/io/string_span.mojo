@@ -54,7 +54,7 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
             src=self.as_bytes_slice().unsafe_ptr(),
             count=length,
         )
-        return String._buffer_type(buffer^)
+        return buffer^
 
     fn __len__(self) -> Int:
         return len(self._span)
