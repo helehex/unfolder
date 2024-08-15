@@ -4,7 +4,7 @@
 """Nova Vector."""
 
 from algorithm import vectorize
-from sys import triple_is_nvidia_cuda
+from sys import triple_is_nvidia_cuda, simdwidthof, bitwidthof, alignof
 from ..memory import memclr, memset, memcpy, simd_store, simd_load
 from ..algorithm import vectorize_stoping
 
