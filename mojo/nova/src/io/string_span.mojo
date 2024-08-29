@@ -62,7 +62,7 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
     fn __bool__(self) -> Bool:
         return self.__len__() > 0
 
-    fn _eq(self, other: StringSpan[_]) -> Bool:
+    fn __eq__(self, other: Self) -> Bool:
         if len(self._span) != len(other._span):
             return False
         for idx in range(len(self._span)):
@@ -70,11 +70,13 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
                 return False
         return True
 
-    fn __eq__(self, other: Self) -> Bool:
-        return self._eq(other)
-
     fn __eq__(self, other: StringSpan[_]) -> Bool:
-        return self._eq(other)
+        if len(self._span) != len(other._span):
+            return False
+        for idx in range(len(self._span)):
+            if self._span[idx] != other._span[idx]:
+                return False
+        return True
 
     fn _ne(self, other: StringSpan[_]) -> Bool:
         if len(self._span) != len(other._span):
@@ -85,13 +87,23 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
         return False
 
     fn __ne__(self, other: Self) -> Bool:
-        return self._ne(other)
+        if len(self._span) != len(other._span):
+            return True
+        for idx in range(len(self._span)):
+            if self._span[idx] != other._span[idx]:
+                return True
+        return False
 
     fn __ne__(self, other: StringSpan[_]) -> Bool:
-        return self._ne(other)
+        if len(self._span) != len(other._span):
+            return True
+        for idx in range(len(self._span)):
+            if self._span[idx] != other._span[idx]:
+                return True
+        return False
 
-    fn split(self, sep: String, max: Int) -> List[StringSpan[lifetime]]:
-        var result = List[StringSpan[lifetime]](capacity=8)
+    fn split[lif: AnyLifetime[False].type](self: StringSpan[lif], sep: String, max: Int) -> List[StringSpan[lif]]:
+        var result = List[StringSpan[lif]](capacity=8)
         var remaining = self
 
         @parameter
@@ -101,8 +113,8 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
         _split[_stop](sep, result, remaining)
         return result
 
-    fn split(self, sep: String, stop: String) -> List[StringSpan[lifetime]]:
-        var result = List[StringSpan[lifetime]](capacity=8)
+    fn split[lif: AnyLifetime[False].type](self: StringSpan[lif], sep: String, stop: String) -> List[StringSpan[lif]]:
+        var result = List[StringSpan[lif]](capacity=8)
         var remaining = self
 
         @parameter
@@ -112,8 +124,8 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
         _split[_stop](sep, result, remaining)
         return result
 
-    fn split(self, sep: String) -> List[StringSpan[lifetime]]:
-        var result = List[StringSpan[lifetime]](capacity=8)
+    fn split[lif: AnyLifetime[False].type](self: StringSpan[lif], sep: String) -> List[StringSpan[lif]]:
+        var result = List[StringSpan[lif]](capacity=8)
         var remaining = self
 
         @parameter
@@ -159,8 +171,7 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
 # +----------------------------------------------------------------------------------------------+ #
 #
 #
-fn _split[
-    mut: Bool, lifetime: AnyLifetime[mut].type, //, stop_condition: fn () capturing -> Bool
+fn _split[lifetime: AnyLifetime[False].type, //, stop_condition: fn () capturing -> Bool
 ](sep: String, inout result: List[StringSpan[lifetime]], inout remaining: StringSpan[lifetime]):
     var current = StringSpan[lifetime](remaining._span._data, 0)
 

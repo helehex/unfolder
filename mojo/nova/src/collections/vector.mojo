@@ -646,10 +646,15 @@ struct VectorIter[
 
     @always_inline("nodebug")
     fn __eq__(self, rhs: Self) -> Bool:
-        return self.__eq__[None](rhs)
+        if len(self) != len(rhs):
+            return False
+        for idx in range(len(self)):
+            if self[idx] != rhs[idx]:
+                return False
+        return True
 
     @always_inline("nodebug")
-    fn __eq__[__: None = None](self, rhs: VectorIter[type, _, _, _, _]) -> Bool:
+    fn __eq__(self, rhs: VectorIter[type, _, _, _, _]) -> Bool:
         if len(self) != len(rhs):
             return False
         for idx in range(len(self)):
@@ -659,10 +664,15 @@ struct VectorIter[
 
     @always_inline("nodebug")
     fn __ne__(self, rhs: Self) -> Bool:
-        return self.__ne__[None](rhs)
+        if len(self) != len(rhs):
+            return True
+        for idx in range(len(self)):
+            if self[idx] != rhs[idx]:
+                return True
+        return False
 
     @always_inline("nodebug")
-    fn __ne__[__: None = None](self, rhs: VectorIter[type, _, _, _, _]) -> Bool:
+    fn __ne__(self, rhs: VectorIter[type, _, _, _, _]) -> Bool:
         if len(self) != len(rhs):
             return True
         for idx in range(len(self)):
