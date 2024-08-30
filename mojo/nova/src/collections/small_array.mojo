@@ -50,7 +50,7 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
     fn __init__(inout self, owned *elems: T):
         self = Self(storage=elems^)
 
-    @always_inline("nodebug")
+    @always_inline
     fn __init__(inout self, *, owned storage: VariadicListMem[T, _]):
         debug_assert(len(storage) == size, "Elements must be of length size")
         self.__init__[False]()
@@ -81,25 +81,25 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
 
     # +------( Iterate )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn __iter__(ref [_]self) -> ArrayIter[T, bnd, fmt, __lifetime_of(self)]:
         return self[:]
 
     # +------( Subscript )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn __getitem__(ref [_]self, owned idx: Int) -> ref [__lifetime_of(self)] T:
         bnd.adjust(idx, size)
         return self.unsafe_ref(idx)
 
-    @always_inline("nodebug")
+    @always_inline
     fn __getitem__[
         bnd: SpanBound = bnd
     ](ref [_]self, owned slice: Slice) -> ArrayIter[T, bnd, fmt, __lifetime_of(self)]:
         bnd.adjust(slice, size)
         return ArrayIter[T, bnd, fmt, __lifetime_of(self)](self.unsafe_ptr(), slice)
 
-    @always_inline("nodebug")
+    @always_inline
     fn unsafe_ref(ref [_]self, idx: Int) -> ref [__lifetime_of(self)] T:
         return UnsafePointer(
             __mlir_op.`pop.array.gep`(UnsafePointer.address_of(self._data).address, idx.value)
@@ -122,21 +122,21 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
 
     # +------( Format )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn __str__[fmt: ArrayFormat = fmt](self) -> String:
         var result: String = ""
         var writer = result._unsafe_to_formatter()
         self.format_to[fmt](writer)
         return result
 
-    @always_inline("nodebug")
+    @always_inline
     fn _get_item_align(self) -> Int:
         var longest = 0
         for item in self:
             longest = max(longest, len(str(item[])))
         return longest
 
-    @always_inline("nodebug")
+    @always_inline
     fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter):
         @parameter
         if fmt.pad:
@@ -146,38 +146,38 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
         var iter = self.__iter__()
 
         @parameter
-        @always_inline("nodebug")
+        @always_inline
         fn _write():
             writer.write(fmt.item_color, str(iter.__next__()[]))
 
         write_sep[_write, fmt](writer, len(iter))
 
-    @always_inline("nodebug")
+    @always_inline
     fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter, align: Int):
         var iter = self.__iter__()
 
         @parameter
-        @always_inline("nodebug")
+        @always_inline
         fn _str():
             write_align[fmt.pad, fmt.item_color](writer, str(iter.__next__()[]), align)
 
         write_sep[_str, fmt](writer, len(iter))
 
-    @always_inline("nodebug")
+    @always_inline
     fn __len__(self) -> Int:
         return size
 
-    @always_inline("nodebug")
+    @always_inline
     fn __bool__(self) -> Bool:
         return True
 
-    @always_inline("nodebug")
+    @always_inline
     fn __eq__[
         size: Int = size, bnd: SpanBound = bnd, fmt: ArrayFormat = fmt
     ](self, rhs: SmallArray[T, size, bnd, fmt]) -> Bool:
         return self[:] == rhs[:]
 
-    @always_inline("nodebug")
+    @always_inline
     fn __ne__[
         size: Int = size, bnd: SpanBound = bnd, fmt: ArrayFormat = fmt
     ](self, rhs: SmallArray[T, size, bnd, fmt]) -> Bool:

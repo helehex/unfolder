@@ -85,7 +85,7 @@ fn unfold(seed: MGraph, origin: Int) -> MGraph:
     var o_: Int = _o
 
     @parameter  # --- check for continuation
-    @always_inline("nodebug")
+    @always_inline
     fn _check() -> Bool:
         if mask[_o] > 0:
             result.reach(o_, _o, depth)
@@ -93,7 +93,7 @@ fn unfold(seed: MGraph, origin: Int) -> MGraph:
         return True  # keeps going, return true
 
     @parameter  # --- search through connected edges
-    @always_inline("nodebug")
+    @always_inline
     fn _search() -> Bool:
         while _o < edge_limit:
             if seed.edges[Ind2(_o, o_)] > 0 and _check():
@@ -103,7 +103,7 @@ fn unfold(seed: MGraph, origin: Int) -> MGraph:
         return True  # all checks must fail to trigger a pop
 
     @parameter  # --- push trace, and update mask
-    @always_inline("nodebug")
+    @always_inline
     fn _push():
         o_ = _o
         depth += 1
@@ -115,7 +115,7 @@ fn unfold(seed: MGraph, origin: Int) -> MGraph:
         _o = edge_start
 
     @parameter  # --- pop trace, and update mask
-    @always_inline("nodebug")
+    @always_inline
     fn _pop():
         max_depth = max(depth, max_depth)  # check for max depth before pop
         depth -= 1  # decrement depth
@@ -185,7 +185,7 @@ fn unfold_lg(seed: LGraph, origin: Int) -> LGraph:
 
     # +--- push trace, and update mask
     @parameter
-    @always_inline("nodebug")
+    @always_inline
     fn _push():
         # search deepens, push trace
         xy_ = _xy
@@ -197,7 +197,7 @@ fn unfold_lg(seed: LGraph, origin: Int) -> LGraph:
 
     # --- pop trace, and update mask
     @parameter
-    @always_inline("nodebug")
+    @always_inline
     fn _pop():
         # search ended, pop trace
         mask[lb_] = False
@@ -209,7 +209,7 @@ fn unfold_lg(seed: LGraph, origin: Int) -> LGraph:
 
     # +--- search through connected edges
     @parameter
-    @always_inline("nodebug")
+    @always_inline
     fn _search() -> Bool:
         # search for neighbors until ready for push or pop
         while seed.next_neighbor(xy_, _xy):
@@ -274,7 +274,7 @@ fn unfold_fast_breadth_lg[self_edge: Bool = True](seed: LGraph, origin: Int) -> 
     result.unsafe_touch(xy)
 
     @parameter
-    @always_inline("nodebug")
+    @always_inline
     fn _crawl_edges[above: Bool](curr_freq: Freq[Int]):
         for _x in range(seed.width):
             if seed.edges[_x, xy[0]][0 if above else 1] > 0:
@@ -296,7 +296,7 @@ fn unfold_fast_breadth_lg[self_edge: Bool = True](seed: LGraph, origin: Int) -> 
     _crawl_edges[False](curr_trace[xy[0]])
 
     @parameter
-    @always_inline("nodebug")
+    @always_inline
     fn _crawl_node(curr_freq: Freq[Int]):
         if curr_freq:
             _crawl_edges[True](curr_freq)

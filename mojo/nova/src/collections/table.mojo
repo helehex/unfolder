@@ -34,13 +34,13 @@ struct Table[
 
     # +------( Lifecycle )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn __init__(inout self):
         """Creates a null array with zero size."""
         self._data = UnsafePointer[T]()
         self._cols, self._rows = 0, 0
 
-    @always_inline("nodebug")
+    @always_inline
     fn __init__[clear: Bool = True](inout self, cols: Int, rows: Int):
         """Creates a new array and fills it with default values."""
         var size = cols * rows
@@ -51,14 +51,14 @@ struct Table[
         if clear:
             _init(self._data, size)
 
-    @always_inline("nodebug")
+    @always_inline
     fn __init__(inout self, cols: Int, rows: Int, *, fill: T):
         self.__init__[False](cols=cols, rows=rows)
         for idx in range(cols * rows):
             _copy(self._data + idx, fill)
 
     # Optional[T] until problem is fixed
-    @always_inline("nodebug")
+    @always_inline
     fn __init__(inout self, cols: Int, rows: Int, *, rule: fn (Int, Int) -> Optional[T]):
         self.__init__[False](cols=cols, rows=rows)
         var idx = 0
@@ -67,7 +67,7 @@ struct Table[
                 _move(self._data + idx, rule(x, y).value())
                 idx += 1
 
-    @always_inline("nodebug")
+    @always_inline
     fn __copyinit__(inout self, other: Self):
         if other._data:
             self.__init__[False](other._cols, other._rows)
@@ -75,13 +75,13 @@ struct Table[
         else:
             self = Self()
 
-    @always_inline("nodebug")
+    @always_inline
     fn __moveinit__(inout self, owned other: Self):
         self._data = other._data
         self._cols = other._cols
         self._rows = other._rows
 
-    @always_inline("nodebug")
+    @always_inline
     fn __del__(owned self):
         """Delete the items in this table."""
         if self._data:
@@ -90,15 +90,15 @@ struct Table[
 
     # +------( Subscript )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn __getitem__(ref [_]self, col: Int, row: Int) -> ref [__lifetime_of(self)] T:
         return (self._data + (row * self._cols + col))[]
 
-    @always_inline("nodebug")
+    @always_inline
     fn __getitem__(ref [_]self, ind: Ind2) -> ref [__lifetime_of(self)] T:
         return self[ind[0], ind[1]]
 
-    @always_inline("nodebug")
+    @always_inline
     fn __getitem__(
         ref [_]self, owned col: Slice, owned row: Int
     ) -> ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)]:
@@ -111,7 +111,7 @@ struct Table[
             self._data, Slice(start, stop, col.step)
         )
 
-    @always_inline("nodebug")
+    @always_inline
     fn __getitem__(
         ref [_]self, owned col: Int, owned row: Slice
     ) -> ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)]:
@@ -124,7 +124,7 @@ struct Table[
             self._data, Slice(start, stop, step)
         )
 
-    @always_inline("nodebug")
+    @always_inline
     fn row(ref [_]self, idx: Int) -> ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)]:
         var start = idx * self._cols
         var stop = start + self._cols
@@ -132,7 +132,7 @@ struct Table[
             self._data, Slice(start, stop)
         )
 
-    @always_inline("nodebug")
+    @always_inline
     fn col(ref [_]self, idx: Int) -> ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)]:
         var start = idx
         var stop = self._cols * self._rows
@@ -143,36 +143,36 @@ struct Table[
 
     # +------( Format )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn __str__(self) -> String:
         return String.format_sequence(self)
 
-    @always_inline("nodebug")
+    @always_inline
     fn format[fmt: TableFormat = fmt](self) -> String:
         var result: String = ""
         var formatter = result._unsafe_to_formatter()
         self.format_to[fmt](formatter)
         return result
 
-    @always_inline("nodebug")
+    @always_inline
     fn format[fmt: TableFormat = fmt](self, align: Int) -> String:
         var result: String = ""
         var formatter = result._unsafe_to_formatter()
         self.format_to[fmt](formatter, align)
         return result
 
-    @always_inline("nodebug")
+    @always_inline
     fn format_to(self, inout writer: Formatter):
         self.format_to[fmt](writer)
 
-    @always_inline("nodebug")
+    @always_inline
     fn _get_item_align(self) -> Int:
         var longest = len(str(self._cols - 1))
         for idx in range(self._cols * self._rows):
             longest = max(longest, len(str(self._data[idx])))
         return longest
 
-    @always_inline("nodebug")
+    @always_inline
     fn _get_tbl_pad[fmt: TableFormat = fmt](self) -> Int:
         var result = len(str(self._rows - 1)) - 1
 
@@ -181,11 +181,11 @@ struct Table[
             result = max(result, len(fmt.lbl))
         return result
 
-    @always_inline("nodebug")
+    @always_inline
     fn format_to[fmt: TableFormat](self, inout writer: Formatter):
         self.format_to[fmt](writer, self._get_item_align())
 
-    @always_inline("nodebug")
+    @always_inline
     fn format_to[fmt: TableFormat = fmt](self, inout writer: Formatter, align: Int):
         var pad = self._get_tbl_pad[fmt]()
 
@@ -216,7 +216,7 @@ struct Table[
                 )
 
                 @parameter
-                @always_inline("nodebug")
+                @always_inline
                 fn _str_lbl() -> String:
                     return str(fmt.lbl)
 
@@ -229,7 +229,7 @@ struct Table[
                 )
 
             @parameter
-            @always_inline("nodebug")
+            @always_inline
             fn _str_col_idx(idx: Int) -> String:
                 return str(idx)
 
@@ -262,13 +262,13 @@ struct Table[
                 )
 
         @parameter
-        @always_inline("nodebug")
+        @always_inline
         fn _str_rows(idx: Int):
             @parameter
             if fmt.show_row_idx:
 
                 @parameter
-                @always_inline("nodebug")
+                @always_inline
                 fn _str_row_idx(_idx: Int) -> String:
                     return str(idx)
 
@@ -305,15 +305,15 @@ struct Table[
 
     # +------( Operations )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn __bool__(self) -> Bool:
         return self._cols != 0 and self._rows != 0
 
-    @always_inline("nodebug")
+    @always_inline
     fn __eq__(self, rhs: Self) -> Bool:
         return self.__eq__[None](rhs)
 
-    @always_inline("nodebug")
+    @always_inline
     fn __eq__[__: None = None](self, rhs: Table[T, _, _]) -> Bool:
         if self._cols != rhs._cols or self._rows != rhs._rows:
             return False
@@ -323,11 +323,11 @@ struct Table[
                 return False
         return True
 
-    @always_inline("nodebug")
+    @always_inline
     fn __ne__(self, rhs: Self) -> Bool:
         return self.__ne__[None](rhs)
 
-    @always_inline("nodebug")
+    @always_inline
     fn __ne__[__: None = None](self, rhs: Table[T, _, _]) -> Bool:
         if self._cols != rhs._cols or self._rows != rhs._rows:
             return True
@@ -337,7 +337,7 @@ struct Table[
                 return True
         return False
 
-    @always_inline("nodebug")
+    @always_inline
     fn _resize(self, cols: Int, rows: Int) -> Table[T, bnd, fmt]:
         var result: Self
         result.__init__[False](cols, rows)
@@ -347,7 +347,7 @@ struct Table[
         var src = self._data
 
         @parameter
-        @always_inline("nodebug")
+        @always_inline
         fn _copy_rows(count: Int):
             if col_dif > 0:
                 for _ in range(count):
@@ -370,7 +370,7 @@ struct Table[
 
         return result
 
-    @always_inline("nodebug")
+    @always_inline
     fn resize(inout self, cols: Int, rows: Int):
         self = self._resize(cols, rows)
 
@@ -389,7 +389,7 @@ struct TableFormat:
     var show_col_idx: Bool
     var show_row_idx: Bool
 
-    @always_inline("nodebug")
+    @always_inline
     fn __init__(
         inout self,
         owned lbl: StringLiteral = " ",
@@ -410,7 +410,7 @@ struct TableFormat:
         self.show_col_idx = show_col_idx
         self.show_row_idx = show_row_idx
 
-    # @always_inline("nodebug")
+    # @always_inline
     # fn __init__(
     #     inout self,
     #     owned lbl: Variant[String, StringRef, StringLiteral] = " ",
@@ -464,11 +464,11 @@ struct TableFormat:
     #     self.show_col_idx = show_col_idx
     #     self.show_row_idx = show_row_idx
 
-    @always_inline("nodebug")
+    @always_inline
     fn to_row_fmt(self) -> ArrayFormat:
         return ArrayFormat(Box.v, "", Box.v, Box.v, self.box_color, self.item_color)
 
-    @always_inline("nodebug")
+    @always_inline
     fn to_col_fmt(self) -> ArrayFormat:
         return ArrayFormat(
             Box.v, self.item_pad, Box.v + "\n" + Box.v, Box.v, self.box_color, self.item_color

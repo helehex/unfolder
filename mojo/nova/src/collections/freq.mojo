@@ -45,7 +45,7 @@ struct Freq[T: StringableKeyElement](Formattable, Sized, Boolable, Value):
         else:
             self.discard(key)
 
-    @always_inline("nodebug")
+    @always_inline
     fn discard(inout self, key: T):
         try:
             _ = self._data.pop(key)
@@ -54,7 +54,7 @@ struct Freq[T: StringableKeyElement](Formattable, Sized, Boolable, Value):
 
     # +------( Format )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn __str__(self) -> String:
         var output = String()
         var writer = output._unsafe_to_formatter()
@@ -79,17 +79,17 @@ struct Freq[T: StringableKeyElement](Formattable, Sized, Boolable, Value):
 
     # +------( Unary )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn __len__(self) -> Int:
         return self._data.__len__()
 
-    @always_inline("nodebug")
+    @always_inline
     fn __bool__(self) -> Bool:
         return self._data.__bool__()
 
     # +------( Comparison )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn __eq__(self, other: Self) -> Bool:
         if len(self) != len(other):
             return False
@@ -98,81 +98,81 @@ struct Freq[T: StringableKeyElement](Formattable, Sized, Boolable, Value):
                 return False
         return True
 
-    @always_inline("nodebug")
+    @always_inline
     fn __ne__(self, other: Self) -> Bool:
         return not (self == other)
 
-    @always_inline("nodebug")
+    @always_inline
     fn __contains__(self, item: T) -> Bool:
         return self[item] != 0
 
     # +------( Addition )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn __add__(self, rhs: T) -> Self:
         var result = self
         result += rhs
         return result
 
-    @always_inline("nodebug")
+    @always_inline
     fn __add__(self, rhs: DictEntry[T, Int]) -> Self:
         var result = self
         result += rhs
         return result
 
-    @always_inline("nodebug")
+    @always_inline
     fn __add__(self, rhs: Self) -> Self:
         var result = self
         result += rhs
         return result
 
-    @always_inline("nodebug")
+    @always_inline
     fn __iadd__(inout self, rhs: T):
         self[rhs] += 1
 
-    @always_inline("nodebug")
+    @always_inline
     fn __iadd__(inout self, rhs: DictEntry[T, Int]):
         self[rhs.key] += rhs.value
 
-    @always_inline("nodebug")
+    @always_inline
     fn __iadd__(inout self, rhs: Self):
         for item in rhs:
             self += item[]
 
     # +------( Subtract )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn __sub__(self, rhs: T) -> Self:
         var result = self
         result -= rhs
         return result
 
-    @always_inline("nodebug")
+    @always_inline
     fn __sub__(self, rhs: DictEntry[T, Int]) -> Self:
         var result = self
         result -= rhs
         return result
 
-    @always_inline("nodebug")
+    @always_inline
     fn __sub__(self, rhs: Self) -> Self:
         var result = self
         result -= rhs
         return result
 
-    @always_inline("nodebug")
+    @always_inline
     fn __isub__(inout self, rhs: T):
         self[rhs] -= 1
 
-    @always_inline("nodebug")
+    @always_inline
     fn __isub__(inout self, rhs: DictEntry[T, Int]):
         self[rhs.key] -= rhs.value
 
-    @always_inline("nodebug")
+    @always_inline
     fn __isub__(inout self, rhs: Self):
         for item in rhs:
             self -= item[]
 
-    @always_inline("nodebug")
+    @always_inline
     fn clear(inout self):
         self.total = 0
         try:

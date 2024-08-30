@@ -85,27 +85,27 @@ struct MGraph(Stringable, Value, Drawable):
 
     # +------( Lookups )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn xy2id(self, xy: Ind2) -> Int:
         return self.nodes[xy] - 1
 
-    @always_inline("nodebug")
+    @always_inline
     fn xy2lb(self, xy: Ind2) -> Int:
         return self._id2lb[self.xy2id(xy)]
 
-    @always_inline("nodebug")
+    @always_inline
     fn lb2id(self, lb: Int) -> Int:
         return self._lb2id[lb]
 
-    @always_inline("nodebug")
+    @always_inline
     fn lb2xy(self, lb: Int) -> Ind2:
         return self._id2xy[self.lb2id(lb)]
 
-    @always_inline("nodebug")
+    @always_inline
     fn id2xy(self, id: Int) -> Ind2:
         return self._id2xy[id]
 
-    @always_inline("nodebug")
+    @always_inline
     fn id2lb(self, id: Int) -> Int:
         return self._id2lb[id]
 
@@ -199,7 +199,7 @@ struct MGraph(Stringable, Value, Drawable):
     fn __ne__(self, other: Self) -> Bool:
         return not self.__eq__(other)
 
-    @always_inline("nodebug")
+    @always_inline
     fn touch(inout self, xy: Ind2):
         """Creates a new node entry at (x, y)."""
         if self.nodes[xy]:
@@ -207,7 +207,7 @@ struct MGraph(Stringable, Value, Drawable):
         else:
             self.unsafe_touch(xy)
 
-    @always_inline("nodebug")
+    @always_inline
     fn unsafe_touch(inout self, xy: Ind2):
         """Assumes the node does not exist."""
         self._id2xy[self.node_count] = xy
@@ -215,7 +215,7 @@ struct MGraph(Stringable, Value, Drawable):
         self.node_count += 1
         self.nodes[xy] = self.node_count
 
-    @always_inline("nodebug")
+    @always_inline
     fn reach(inout self, src: Int, dst: Int, depth: Int):
         """Creates an edge from the src node to the dst node. Touches the dst node if it has not been touched yet.
         """
@@ -231,7 +231,7 @@ struct MGraph(Stringable, Value, Drawable):
         self.edges[Ind2(_i, i_)] += 1
         self.edges[Ind2(i_, _i)] += 1
 
-    @always_inline("nodebug")
+    @always_inline
     fn next_neighbor(self, id_: Int, inout _id: Int) -> Bool:
         while _id < self.bounds[id_][1]:
             if self.edges[_id, id_]:
@@ -239,7 +239,7 @@ struct MGraph(Stringable, Value, Drawable):
             _id += 1
         return False
 
-    @always_inline("nodebug")
+    @always_inline
     fn finalize(inout self):
         """Finalize the generation of this graph."""
         self.shrink()

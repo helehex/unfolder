@@ -17,18 +17,18 @@ from sys.intrinsics import _type_is_eq
 
 
 # homogeneous utils
-@always_inline("nodebug")
+@always_inline
 fn _constrain_homo[T: Movable, *Ts: Movable]():
     @parameter
     for i in range(_len[Ts]()):
         constrained[_type_is_eq[T, Ts[i]](), "non homogeneous types"]()
 
 
-@always_inline("nodebug")
+@always_inline
 fn _constrain_len[capacity: Int, *Ts: Movable]():
     constrained[_len[Ts]() <= capacity, "variadic exceeds capacity"]()
 
 
-@always_inline("nodebug")
+@always_inline
 fn _len[*Ts: Movable]() -> Int:
     return len(VariadicList(Ts))

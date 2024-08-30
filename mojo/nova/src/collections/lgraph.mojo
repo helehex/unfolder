@@ -76,27 +76,27 @@ struct LGraph(Stringable, Value, Drawable):
 
     # +------( Lookups )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn xy2id(self, xy: Ind2) -> Int:
         return self.nodes[xy] - 1
 
-    @always_inline("nodebug")
+    @always_inline
     fn xy2lb(self, xy: Ind2) -> Int:
         return self._id2lb[self.xy2id(xy)]
 
-    @always_inline("nodebug")
+    @always_inline
     fn lb2id(self, lb: Int) -> Int:
         return self._lb2id[lb]
 
-    @always_inline("nodebug")
+    @always_inline
     fn lb2xy(self, lb: Int) -> Ind2:
         return self._id2xy[self.lb2id(lb)]
 
-    @always_inline("nodebug")
+    @always_inline
     fn id2xy(self, id: Int) -> Ind2:
         return self._id2xy[id]
 
-    @always_inline("nodebug")
+    @always_inline
     fn id2lb(self, id: Int) -> Int:
         return self._id2lb[id]
 
@@ -189,7 +189,7 @@ struct LGraph(Stringable, Value, Drawable):
     fn __ne__(self, other: Self) -> Bool:
         return not self.__eq__(other)
 
-    @always_inline("nodebug")
+    @always_inline
     fn touch(inout self, xy: Ind2):
         """Creates a new node entry at (x, y)."""
         if self.nodes[xy]:
@@ -197,7 +197,7 @@ struct LGraph(Stringable, Value, Drawable):
         else:
             self.unsafe_touch(xy)
 
-    @always_inline("nodebug")
+    @always_inline
     fn unsafe_touch(inout self, xy: Ind2):
         """Assumes the node does not exist."""
         self._id2xy[self.node_count] = xy
@@ -206,7 +206,7 @@ struct LGraph(Stringable, Value, Drawable):
         self.nodes[xy] = self.node_count
         self.depth = max(self.depth, xy[1] + 1)
 
-    @always_inline("nodebug")
+    @always_inline
     fn reach(inout self, xy_: Ind2, _x: Int):
         var _xy = Ind2(_x, xy_[1] + 1)
         self.touch(_xy)
@@ -215,7 +215,7 @@ struct LGraph(Stringable, Value, Drawable):
         self.edges[_x, id_][1] += 1
         self.edges[xy_[0], _id][0] += 1
 
-    @always_inline("nodebug")
+    @always_inline
     fn next_neighbor(self, xy_: Ind2, inout _xy: Ind2) -> Bool:
         if _xy[1] < xy_[1]:
             while _xy[0] < self.width:
@@ -231,7 +231,7 @@ struct LGraph(Stringable, Value, Drawable):
 
         return False
 
-    @always_inline("nodebug")
+    @always_inline
     fn finalize(inout self):
         """Finalize the generation of this graph."""
         self.shrink()

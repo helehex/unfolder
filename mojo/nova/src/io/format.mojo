@@ -9,7 +9,7 @@
 # +----------------------------------------------------------------------------------------------+ #
 #
 #
-@always_inline("nodebug")
+@always_inline
 fn write_rep[T: Formattable](inout writer: Formatter, value: T, count: Int):
     for _ in range(count):
         writer.write(value)
@@ -20,7 +20,7 @@ fn write_rep[T: Formattable](inout writer: Formatter, value: T, count: Int):
 # +----------------------------------------------------------------------------------------------+ #
 #
 #
-@always_inline("nodebug")
+@always_inline
 fn write_align[
     pad: StringSpan[ImmutableStaticLifetime], item_color: String = Color.none
 ](inout writer: Formatter, span: StringSpan[_], new_len: Int):
@@ -38,14 +38,14 @@ fn write_align[
 # +----------------------------------------------------------------------------------------------+ #
 #
 #
-@always_inline("nodebug")
+@always_inline
 fn write_sep[fmt: ArrayFormat](inout writer: Formatter, len: Int):
     writer.write(fmt.beg)
     write_rep(writer, fmt.sep, len)
     writer.write(fmt.end)
 
 
-@always_inline("nodebug")
+@always_inline
 fn write_sep[write: fn () capturing -> None, fmt: ArrayFormat](inout writer: Formatter, count: Int):
     alias sep_color = Color.clear if (
         bool(fmt.item_color) and not fmt.color
@@ -63,7 +63,7 @@ fn write_sep[write: fn () capturing -> None, fmt: ArrayFormat](inout writer: For
         writer.write(Color.clear)
 
 
-@always_inline("nodebug")
+@always_inline
 fn write_sep[
     write: fn (Int) capturing -> None, fmt: ArrayFormat
 ](inout writer: Formatter, count: Int):
@@ -84,34 +84,34 @@ fn write_sep[
         writer.write(Color.clear)
 
 
-@always_inline("nodebug")
+@always_inline
 fn write_sep[
     read: fn () capturing -> String, fmt: ArrayFormat
 ](inout writer: Formatter, count: Int, align: Int):
     @parameter
-    @always_inline("nodebug")
+    @always_inline
     fn _str():
         write_align[fmt.pad, fmt.item_color](writer, read(), align)
 
     write_sep[_str, fmt](writer, count)
 
 
-@always_inline("nodebug")
+@always_inline
 fn write_sep[
     read: fn (Int) capturing -> String, fmt: ArrayFormat
 ](inout writer: Formatter, count: Int, align: Int):
     @parameter
-    @always_inline("nodebug")
+    @always_inline
     fn _str(idx: Int):
         write_align[fmt.pad, fmt.item_color](writer, read(idx), align)
 
     write_sep[_str, fmt](writer, count)
 
 
-@always_inline("nodebug")
+@always_inline
 fn write_sep[fmt: ArrayFormat](inout writer: Formatter, count: Int, align: Int):
     @parameter
-    @always_inline("nodebug")
+    @always_inline
     fn _str():
         write_rep(writer, fmt.pad, align)
 
@@ -204,7 +204,7 @@ fn write_sep[fmt: ArrayFormat](inout writer: Formatter, count: Int, align: Int):
 #         data.append(0)
 #         self._value = data^
 
-#     @always_inline("nodebug")
+#     @always_inline
 #     fn __copyinit__(inout self, other: Self):
 #         self._value = other._value
 #         self._beg = other._beg
@@ -212,7 +212,7 @@ fn write_sep[fmt: ArrayFormat](inout writer: Formatter, count: Int, align: Int):
 #         self._sep = other._sep
 #         self._end = other._end
 
-#     @always_inline("nodebug")
+#     @always_inline
 #     fn __moveinit__(inout self, owned other: Self):
 #         self._value = other._value^
 #         self._beg = other._beg
@@ -220,11 +220,11 @@ fn write_sep[fmt: ArrayFormat](inout writer: Formatter, count: Int, align: Int):
 #         self._sep = other._sep
 #         self._end = other._end
 
-#     @always_inline("nodebug")
+#     @always_inline
 #     fn __bool__(self) -> Bool:
 #         return self._value
 
-#     @always_inline("nodebug")
+#     @always_inline
 #     fn __getattr__[name: StringLiteral](self) -> StringSpan[__lifetime_of(self)]:
 #         var ptr = self._value.unsafe_ptr()
 #         @parameter
@@ -246,15 +246,15 @@ fn write_sep[fmt: ArrayFormat](inout writer: Formatter, count: Int, align: Int):
 #     var mid: SepFormat
 #     var bot: SepFormat
 
-#     @always_inline("nodebug")
+#     @always_inline
 #     fn __init__(inout self, mid: SepFormat):
 #         self = Self(SepFormat(), SepFormat(), mid, SepFormat())
 
-#     @always_inline("nodebug")
+#     @always_inline
 #     fn __init__(inout self, top: SepFormat, bot: SepFormat):
 #         self = Self(top, SepFormat(), SepFormat(), bot)
 
-#     @always_inline("nodebug")
+#     @always_inline
 #     fn __init__(inout self, top: SepFormat, mid: SepFormat, bot: SepFormat):
 #         self = Self(top, SepFormat(), mid, bot)
 

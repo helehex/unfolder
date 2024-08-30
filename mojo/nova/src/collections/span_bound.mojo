@@ -30,7 +30,7 @@ struct SpanBound(Equatable):
 
     # +------( Adjust )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn adjust[context: StringLiteral = ""](self, inout idx: Int, size: Int):
         debug_assert(size > 0, "size must be greater than zero")
         if self == Self.Clamp:
@@ -42,7 +42,7 @@ struct SpanBound(Equatable):
                 idx += size
         debug_assert(0 <= idx < size, "index out of bounds: " + context)
 
-    @always_inline("nodebug")
+    @always_inline
     fn adjust[context: StringLiteral = ""](self, inout slice: Slice, size: Int):
         var has_start = bool(slice.start)
         var has_stop = bool(slice.end)
@@ -73,10 +73,10 @@ struct SpanBound(Equatable):
 
     # +------( Operations )------+ #
     #
-    @always_inline("nodebug")
+    @always_inline
     fn __eq__(self, other: Self) -> Bool:
         return self.value == other.value
 
-    @always_inline("nodebug")
+    @always_inline
     fn __ne__(self, other: Self) -> Bool:
         return self.value != other.value
