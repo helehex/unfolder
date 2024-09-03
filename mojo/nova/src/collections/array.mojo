@@ -631,7 +631,7 @@ struct ArrayIter[
         return True
 
     @always_inline
-    fn __eq__[__:None=None](self, rhs: ArrayIter[T, _, _, _]) -> Bool:
+    fn __eq__[__: None = None](self, rhs: ArrayIter[T, _, _, _]) -> Bool:
         if len(self) != len(rhs):
             return False
         for idx in range(len(self)):

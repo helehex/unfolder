@@ -102,7 +102,9 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
                 return True
         return False
 
-    fn split[lif: AnyLifetime[False].type](self: StringSpan[lif], sep: String, max: Int) -> List[StringSpan[lif]]:
+    fn split[
+        lif: AnyLifetime[False].type
+    ](self: StringSpan[lif], sep: String, max: Int) -> List[StringSpan[lif]]:
         var result = List[StringSpan[lif]](capacity=8)
         var remaining = self
 
@@ -113,7 +115,9 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
         _split[_stop](sep, result, remaining)
         return result
 
-    fn split[lif: AnyLifetime[False].type](self: StringSpan[lif], sep: String, stop: String) -> List[StringSpan[lif]]:
+    fn split[
+        lif: AnyLifetime[False].type
+    ](self: StringSpan[lif], sep: String, stop: String) -> List[StringSpan[lif]]:
         var result = List[StringSpan[lif]](capacity=8)
         var remaining = self
 
@@ -124,7 +128,9 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
         _split[_stop](sep, result, remaining)
         return result
 
-    fn split[lif: AnyLifetime[False].type](self: StringSpan[lif], sep: String) -> List[StringSpan[lif]]:
+    fn split[
+        lif: AnyLifetime[False].type
+    ](self: StringSpan[lif], sep: String) -> List[StringSpan[lif]]:
         var result = List[StringSpan[lif]](capacity=8)
         var remaining = self
 
@@ -171,7 +177,8 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
 # +----------------------------------------------------------------------------------------------+ #
 #
 #
-fn _split[lifetime: AnyLifetime[False].type, //, stop_condition: fn () capturing -> Bool
+fn _split[
+    lifetime: AnyLifetime[False].type, //, stop_condition: fn () capturing -> Bool
 ](sep: String, inout result: List[StringSpan[lifetime]], inout remaining: StringSpan[lifetime]):
     var current = StringSpan[lifetime](remaining._span._data, 0)
 

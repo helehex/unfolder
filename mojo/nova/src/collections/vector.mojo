@@ -19,7 +19,7 @@ struct Vector[
     fmt: ArrayFormat = "[, ]",
     spc: AddressSpace = AddressSpace.GENERIC,
 ](Formattable, Sized, Value):
-    """A heap allocated vector.
+    """A heap allocated collection of homogeneous elements, with fixed size, and arithmetic semantics.
 
     Parameters:
         type: The data type of elements in the vector.
@@ -115,10 +115,37 @@ struct Vector[
         if self._data:
             self._data.free()
 
+    # +------( Cast )------+ #
+    #
+    @always_inline
+    fn cast[target_type: DType](self) -> Vector[target_type, bnd, fmt, spc]:
+        var result: Vector[target_type, bnd, fmt]
+        result.__init__[False]()
+
+        @parameter
+        @always_inline
+        fn _cast[width: Int](offset: Int):
+            result.unsafe_set[width](offset, self.unsafe_get[width](offset).cast[target_type]())
+
+        vectorize[_cast, min(simdwidthof[type](), simdwidthof[target_type]())](len(self))
+        return result
+
+    # +------( Format )------+ #
+    #
+    @always_inline
+    fn __str__[fmt: ArrayFormat = fmt](self) -> String:
+        return self[:].__str__[fmt]()
+
+    @always_inline
+    fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter):
+        return self[:].format_to[fmt](writer)
+
+    @always_inline
+    fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter, align: Int):
+        return self[:].format_to[fmt](writer, align)
+
     # +------( Subscript )------+ #
     #
-    alias _default_alignment = alignof[type]() if triple_is_nvidia_cuda() else 1
-
     @always_inline
     fn __getitem__[width: Int = 1, bnd: SpanBound = bnd](self, owned idx: Int) -> SIMD[type, width]:
         @parameter
@@ -191,20 +218,6 @@ struct Vector[
     fn __reversed__(ref [_]self) -> VectorIter[type, bnd, fmt, __lifetime_of(self), spc]:
         return self[::-1]
 
-    # +------( Format )------+ #
-    #
-    @always_inline
-    fn __str__[fmt: ArrayFormat = fmt](self) -> String:
-        return self[:].__str__[fmt]()
-
-    @always_inline
-    fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter):
-        return self[:].format_to[fmt](writer)
-
-    @always_inline
-    fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter, align: Int):
-        return self[:].format_to[fmt](writer, align)
-
     # +------( Operations )------+ #
     #
     @always_inline
@@ -216,8 +229,8 @@ struct Vector[
         return self._data == rhs._data
 
     @always_inline
-    fn __isnot__(self, other: Self) -> Bool:
-        return self._data != other._data
+    fn __isnot__(self, rhs: Self) -> Bool:
+        return self._data != rhs._data
 
     @always_inline
     fn __contains__(self, value: Scalar[type]) -> Bool:
@@ -227,18 +240,6 @@ struct Vector[
             return any(self.unsafe_get[width](offset) == value)
 
         return vectorize_stoping[_check, simdwidthof[type]()](self._size)
-
-    @always_inline
-    fn cast[target_type: DType](self) -> Vector[target_type, bnd, fmt, spc]:
-        var result = Vector[target_type, bnd, fmt, spc](size=len(self))
-
-        @parameter
-        @always_inline
-        fn _cast[width: Int](offset: Int):
-            result.unsafe_set[width](offset, self.unsafe_get[width](offset).cast[target_type]())
-
-        vectorize[_cast, min(simdwidthof[type](), simdwidthof[target_type]())](len(self))
-        return result
 
     @always_inline
     fn bitcast[target_type: DType](owned self) -> Vector[target_type, bnd, fmt, spc]:
@@ -489,7 +490,7 @@ struct VectorIter[
     bnd: SpanBound,
     fmt: ArrayFormat,
     lifetime: AnyLifetime[mutability].type,
-    spc: AddressSpace,
+    spc: AddressSpace = AddressSpace.GENERIC,
 ](Formattable, Sized, Value):
     """Span for Array.
 
@@ -571,6 +572,12 @@ struct VectorIter[
         var sliced_self = self[slice]
         for idx in range(min(len(sliced_self), len(value))):
             self[idx] = value[idx]
+
+    @always_inline
+    fn unsafe_ref(self, owned idx: Int) -> ref [lifetime, spc._value.value] Scalar[type]:
+        return Reference[Scalar[type], lifetime, spc](
+            (self._src + self.start + idx * self.step)[]
+        )[]
 
     # +------( Iterate )------+ #
     #

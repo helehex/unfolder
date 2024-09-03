@@ -7,7 +7,7 @@ from ..memory import _del, _take, _copy, _move
 
 
 fn _small_array_construction_checks[size: Int]():
-    constrained[size > 0, "number of elements in `StaticTuple` must be > 0"]()
+    constrained[size >= 0, "number of elements in `SmallArray` must be >= 0"]()
 
 
 # +----------------------------------------------------------------------------------------------+ #
@@ -17,7 +17,8 @@ fn _small_array_construction_checks[size: Int]():
 struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"](
     Formattable, Sized, Value
 ):
-    """A stack allocated array."""
+    """A stack allocated collection of homogeneous scalars, with static size, and appending semantics.
+    """
 
     # +------[ Alias ]------+ #
     #
@@ -31,11 +32,12 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
     #
     @always_inline
     fn __init__[clear: Bool = True](inout self):
+        _small_array_construction_checks[size]()
+
         @parameter
         if clear:
             self.__init__(T())
         else:
-            _small_array_construction_checks[size]()
             self._data = __mlir_op.`kgen.undef`[_type = Self.Data]()
 
     @always_inline

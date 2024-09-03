@@ -1,3 +1,3 @@
 Nova
 
-Mojo version: `mojo 2024.8.3005 (12110d9c)`
+Mojo version: `mojo 2024.9.105 (a4c61bf1)`
