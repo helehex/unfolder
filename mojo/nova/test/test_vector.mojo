@@ -42,6 +42,7 @@ def test_dtype[type: DType]():
     test_all[type]()
     test_fill[type]()
     test_clear[type]()
+    test_all_eq[type]()
     test_comparison[type]()
     test_add[type]()
     test_sub[type]()
@@ -281,6 +282,12 @@ def test_clear[type: DType]():
     assert_equal(a, Vector[type](0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
 
+def test_all_eq[type: DType]():
+    @parameter
+    if type.is_numeric():
+        assert_true(Vector[type](1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, size = 1000000).all_eq(Vector[type](1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, size = 1000000)))
+
+
 def test_comparison[type: DType]():
     @parameter
     if type.is_numeric():
@@ -294,7 +301,7 @@ def test_add[type: DType]():
     @parameter
     if type.is_numeric():
         assert_equal(
-            Vector[type](1, 2, 3, 4, 5) + Vector[type](5, 4, 3, 2, 1), Vector[type](6, 6, 6, 6, 6)
+            Vector[type](1, 2, 3, 4, 5, 6, 7, 8, 9) + Vector[type](9, 8, 7, 6, 5, 4, 3, 2, 1), Vector[type](10, 10, 10, 10, 10, 10, 10, 10, 10)
         )
 
 

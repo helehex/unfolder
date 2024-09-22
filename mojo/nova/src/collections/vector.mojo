@@ -30,7 +30,7 @@ struct Vector[
 
     # +------< Data >------+ #
     #
-    var _data: UnsafePointer[Scalar[type], spc]
+    var _data: UnsafePointer[Scalar[type]]
     var _size: Int
 
     # +------( Lifecycle )------+ #
@@ -38,13 +38,13 @@ struct Vector[
     @always_inline
     fn __init__(inout self):
         """Creates a null vector with zero size."""
-        self._data = UnsafePointer[Scalar[type], spc]()
+        self._data = UnsafePointer[Scalar[type]]()
         self._size = 0
 
     @always_inline
     fn __init__[clear: Bool = True](inout self, *, size: Int):
         """Creates a new vector and fills it with zero."""
-        self._data = UnsafePointer[Scalar[type], spc].alloc(size)
+        self._data = UnsafePointer[Scalar[type]].alloc(size)
         self._size = size
 
         @parameter
@@ -505,7 +505,7 @@ struct VectorIter[
 
     # +------[ alias ]------+ #
     #
-    alias Pointer = UnsafePointer[Scalar[type], spc]
+    alias Pointer = UnsafePointer[Scalar[type]]
 
     # +------< Data >------+ #
     #
@@ -574,10 +574,8 @@ struct VectorIter[
             self[idx] = value[idx]
 
     @always_inline
-    fn unsafe_ref(self, owned idx: Int) -> ref [lifetime, spc._value.value] Scalar[type]:
-        return Reference[Scalar[type], lifetime, spc](
-            (self._src + self.start + idx * self.step)[]
-        )[]
+    fn unsafe_ref(self, owned idx: Int) -> ref [lifetime] Scalar[type]:
+        return Reference[Scalar[type], lifetime]((self._src + self.start + idx * self.step)[])[]
 
     # +------( Iterate )------+ #
     #
@@ -590,8 +588,8 @@ struct VectorIter[
         return Self(self._src, self.start + (self.size - 1) * self.step, self.size, -self.step)
 
     @always_inline
-    fn __next__(inout self) -> Reference[Scalar[type], lifetime, spc]:
-        var result = Reference[Scalar[type], lifetime, spc](self._src[self.start])
+    fn __next__(inout self) -> Reference[Scalar[type], lifetime]:
+        var result = Reference[Scalar[type], lifetime](self._src[self.start])
         self.start += self.step
         self.size -= 1
         return result[]

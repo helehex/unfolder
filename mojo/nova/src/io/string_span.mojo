@@ -3,8 +3,8 @@
 # x----------------------------------------------------------------------------------------------x #
 """Nova StringSpan."""
 
-from memory import memcpy
-from utils import Span
+from memory import UnsafePointer, memcpy
+from utils import Span, StringRef
 
 
 # +----------------------------------------------------------------------------------------------+ #

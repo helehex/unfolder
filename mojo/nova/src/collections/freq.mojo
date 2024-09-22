@@ -74,8 +74,8 @@ struct Freq[T: StringableKeyElement](Formattable, Sized, Boolable, Value):
             written += 1
         writer.write("}")
 
-    fn __iter__(ref [_]self: Self) -> _DictEntryIter[T, Int, __lifetime_of(self)]:
-        return _DictEntryIter[T, Int, __lifetime_of(self)](0, 0, self._data)
+    fn __iter__(ref [_]self: Self) -> _DictEntryIter[T, Int, __lifetime_of(self._data)]:
+        return _DictEntryIter[T, Int, __lifetime_of(self._data)](0, 0, self._data)
 
     # +------( Unary )------+ #
     #

@@ -1,3 +1,10 @@
-/dist
+# ignore code
+**/temp.**
+**/temp/
 /src/collections/nova_set.mojo
-**temp.mojo
+
+# ignore packages
+*.mojopkg
+
+# ignore environments
+.magic

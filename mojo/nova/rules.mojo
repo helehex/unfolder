@@ -180,8 +180,8 @@ fn unfold_lg(seed: LGraph, origin: Int) -> LGraph:
     var _lb = origin - 1
     var _xy = seed.lb2xy(_lb + 1)
     result.unsafe_touch(Ind2(_lb, 0))
-    var lb_: Int
-    var xy_: Ind2
+    var lb_: Int = 0
+    var xy_: Ind2 = Ind2(0, 0)
 
     # +--- push trace, and update mask
     @parameter

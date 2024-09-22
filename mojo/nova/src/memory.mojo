@@ -3,6 +3,7 @@
 # x----------------------------------------------------------------------------------------------x #
 """Nova Memory."""
 
+from memory import UnsafePointer
 from algorithm import vectorize
 
 
