@@ -22,7 +22,7 @@ fn write_rep[T: Formattable](inout writer: Formatter, value: T, count: Int):
 #
 @always_inline
 fn write_align[
-    pad: StringSpan[ImmutableStaticLifetime], item_color: String = Color.none
+    pad: StringSpan[StaticConstantLifetime], item_color: String = Color.none
 ](inout writer: Formatter, span: StringSpan[_], new_len: Int):
     if len(span) > new_len:
         if new_len > 0:

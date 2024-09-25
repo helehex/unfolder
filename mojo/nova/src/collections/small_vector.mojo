@@ -200,7 +200,7 @@ struct SmallVector[
 
     @always_inline
     fn __setitem__[
-        lif: AnyLifetime[True].type, //
+        lif: MutableLifetime, //
     ](ref [lif]self, owned slice: Slice, value: VectorIter[type, _, _, _, _]):
         var sliced_self = self[slice]
         for idx in range(min(len(sliced_self), len(value))):

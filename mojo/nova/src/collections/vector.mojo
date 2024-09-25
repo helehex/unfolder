@@ -489,7 +489,7 @@ struct VectorIter[
     type: DType,
     bnd: SpanBound,
     fmt: ArrayFormat,
-    lifetime: AnyLifetime[mutability].type,
+    lifetime: Lifetime[mutability].type,
     spc: AddressSpace = AddressSpace.GENERIC,
 ](Formattable, Sized, Value):
     """Span for Array.

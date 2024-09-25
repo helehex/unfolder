@@ -13,7 +13,7 @@ from utils import Span, StringRef
 #
 #
 @value
-struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](Value):
+struct StringSpan[is_mutable: Bool, //, lifetime: Lifetime[is_mutable].type](Value):
     """String Span."""
 
     # +------< Data >------+ #
@@ -103,7 +103,7 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
         return False
 
     fn split[
-        lif: AnyLifetime[False].type
+        lif: ImmutableLifetime
     ](self: StringSpan[lif], sep: String, max: Int) -> List[StringSpan[lif]]:
         var result = List[StringSpan[lif]](capacity=8)
         var remaining = self
@@ -116,7 +116,7 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
         return result
 
     fn split[
-        lif: AnyLifetime[False].type
+        lif: ImmutableLifetime
     ](self: StringSpan[lif], sep: String, stop: String) -> List[StringSpan[lif]]:
         var result = List[StringSpan[lif]](capacity=8)
         var remaining = self
@@ -128,9 +128,7 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
         _split[_stop](sep, result, remaining)
         return result
 
-    fn split[
-        lif: AnyLifetime[False].type
-    ](self: StringSpan[lif], sep: String) -> List[StringSpan[lif]]:
+    fn split[lif: ImmutableLifetime](self: StringSpan[lif], sep: String) -> List[StringSpan[lif]]:
         var result = List[StringSpan[lif]](capacity=8)
         var remaining = self
 
@@ -178,7 +176,7 @@ struct StringSpan[is_mutable: Bool, //, lifetime: AnyLifetime[is_mutable].type](
 #
 #
 fn _split[
-    lifetime: AnyLifetime[False].type, //, stop_condition: fn () capturing -> Bool
+    lifetime: ImmutableLifetime, //, stop_condition: fn () capturing -> Bool
 ](sep: String, inout result: List[StringSpan[lifetime]], inout remaining: StringSpan[lifetime]):
     var current = StringSpan[lifetime](remaining._span._data, 0)
 

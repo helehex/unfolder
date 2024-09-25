@@ -476,7 +476,7 @@ struct ArrayIter[
     T: Value,
     bnd: SpanBound,
     fmt: ArrayFormat,
-    lifetime: AnyLifetime[mutability].type,
+    lifetime: Lifetime[mutability].type,
 ](Formattable, Sized, Value):
     """Span for Array.
 
@@ -756,7 +756,7 @@ struct ArrayFormat:
         self = Self(span)
 
     @always_inline
-    fn __init__[lif: AnyLifetime[False].type](inout self, parse: StringSpan[lif]):
+    fn __init__[lif: ImmutableLifetime](inout self, parse: StringSpan[lif]):
         var p = parse.split("\\", 6)
         if len(p) == 0:
             self = Self()

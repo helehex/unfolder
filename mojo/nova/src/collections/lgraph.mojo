@@ -274,7 +274,7 @@ struct LGraph(Stringable, Value, Drawable):
 
 
 # @value
-# struct NeighborIter[mutability: Bool, //, lifetime: AnyLifetime[mutability].type, above: Bool, below: Bool]:
+# struct NeighborIter[mutability: Bool, //, lifetime: Lifetime[mutability].type, above: Bool, below: Bool]:
 #     var graph: Reference[LayerGraph, lifetime]
 #     var node: Int
 #     var x: Int
@@ -293,5 +293,5 @@ struct LGraph(Stringable, Value, Drawable):
 #         self.x += 1
 #         return result
 
-# struct LayerGraphPermutation[mutability: Bool, //, lifetime: AnyLifetime[mutability].type]:
+# struct LayerGraphPermutation[mutability: Bool, //, lifetime: Lifetime[mutability].type]:
 #     pass
