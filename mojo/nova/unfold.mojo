@@ -61,5 +61,5 @@ def draw_graph[T: Drawable](graph: T, title: String):
 
     # var py = Python()
     # _ = py.eval(p)
-    root.geometry("1400x1400+300+300")
+    root.geometry("1400x1400+0+0")
     root.mainloop()

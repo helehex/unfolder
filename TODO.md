@@ -1,4 +1,5 @@
 - reach step 7
     - create more efficient implementations
 - generate multiway graphs
+    - implement a graph isomorphism check
     - automate writing results to a file

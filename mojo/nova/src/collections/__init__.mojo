@@ -31,5 +31,5 @@ fn _constrain_len[capacity: Int, *Ts: Movable]():
 
 
 @always_inline
-fn _len[*Ts: Movable]() -> Int:
+fn _len[Ts: __mlir_type[`!kgen.variadic<`, Movable, `>`]]() -> Int:
     return len(VariadicList(Ts))

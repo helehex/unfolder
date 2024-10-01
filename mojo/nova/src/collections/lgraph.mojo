@@ -12,7 +12,7 @@ from python import PythonObject
 #
 @value
 struct LGraph(Stringable, Value, Drawable):
-    """Layered Edge Graph. *This also contains meta data used in generation."""
+    """Layered Edge Graph (multipartite graph). *This also contains meta data used in generation."""
 
     # +------[ Alias ]------+ #
     #

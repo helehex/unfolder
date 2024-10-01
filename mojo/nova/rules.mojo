@@ -133,11 +133,8 @@ fn unfold(seed: MGraph, origin: Int) -> MGraph:
         else:
             _push()
 
-    _ = trace  # keep trace and mask alive for the duration of the crawl
-    _ = mask  # ^
     # ---
-    # ---
-    # ------ end cawl
+    # --- end cawl
 
     # TODO debug / estimates error
     result.depth = max_depth + 1
@@ -229,10 +226,9 @@ fn unfold_lg(seed: LGraph, origin: Int) -> LGraph:
         else:
             _pop()
 
-    # keep trace and mask alive for the duration of the crawl
-    _, _, _ = trace, mask, _xy
+    # ---
+    # --- end cawl
 
-    # end cawl
     result.finalize()
     return result^
 
@@ -317,8 +313,6 @@ fn unfold_fast_breadth_lg[self_edge: Bool = True](seed: LGraph, origin: Int) -> 
             item[].clear()
         while xy[0] < seed.node_count:
             _crawl_node(curr_trace[xy[0]])
-
-    _, _, _ = curr_trace, next_trace, xy
 
     # end cawl
     result.finalize()
