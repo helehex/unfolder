@@ -563,10 +563,10 @@ struct ArrayIter[
 
     @always_inline
     fn __next__(inout self) -> Reference[T, lifetime]:
-        var result = Reference[T, lifetime](self._src[self.start])
+        var result = Reference[T, lifetime].address_of(self._src[self.start])
         self.start += self.step
         self.size -= 1
-        return result[]
+        return result
 
     # +------( Format )------+ #
     #

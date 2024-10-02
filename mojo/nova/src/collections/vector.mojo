@@ -246,7 +246,7 @@ struct Vector[
         var result = Vector[target_type, bnd, fmt, spc]()
         result._data = self._data.bitcast[Scalar[target_type]]()
         result._size = (len(self) * bitwidthof[type]()) // bitwidthof[target_type]()
-        __mlir_op.`lit.ownership.mark_destroyed`(Reference(self).value)
+        __mlir_op.`lit.ownership.mark_destroyed`(Reference.address_of(self)._value)
         return result
 
     @always_inline
@@ -575,7 +575,7 @@ struct VectorIter[
 
     @always_inline
     fn unsafe_ref(self, owned idx: Int) -> ref [lifetime] Scalar[type]:
-        return Reference[Scalar[type], lifetime]((self._src + self.start + idx * self.step)[])[]
+        return (self._src + self.start + idx * self.step)[]
 
     # +------( Iterate )------+ #
     #
@@ -589,10 +589,10 @@ struct VectorIter[
 
     @always_inline
     fn __next__(inout self) -> Reference[Scalar[type], lifetime]:
-        var result = Reference[Scalar[type], lifetime](self._src[self.start])
+        var result = Reference[Scalar[type], lifetime].address_of(self._src[self.start])
         self.start += self.step
         self.size -= 1
-        return result[]
+        return result
 
     # +------( Format )------+ #
     #
