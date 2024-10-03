@@ -40,7 +40,7 @@ struct SmallVector[
             self._data = __mlir_op.`kgen.undef`[_type = Self.Data]()
 
     @always_inline
-    fn __init__(inout self, fill: Scalar[type]):
+    fn __init__(inout self, fill: Scalar[type] = 0):
         self.__init__[False]()
 
         @parameter
@@ -48,13 +48,9 @@ struct SmallVector[
             self.unsafe_set(idx, fill)
 
     @always_inline
-    fn __init__(inout self, owned *elems: Scalar[type]):
-        self = Self(storage=elems^)
-
-    @always_inline
     fn __init__[
         width: Int = 1
-    ](inout self, *, owned storage: VariadicListMem[SIMD[type, width], _]):
+    ](inout self, *values: SIMD[type, width]):
         """Creates a new vector with the given values."""
         self.__init__[False]()
 
@@ -63,18 +59,11 @@ struct SmallVector[
         fn _set[_width: Int](idx: Int):
             @parameter
             if width != 1 and _width == 1:
-                self.unsafe_set[1](idx, storage[(idx // width) % len(storage)][idx % width])
+                self.unsafe_set[1](idx, values[(idx // width) % len(values)][idx % width])
             else:
-                self.unsafe_set[width](idx, storage[(idx // width) % len(storage)])
+                self.unsafe_set[width](idx, values[(idx // width) % len(values)])
 
         vectorize[_set, width](size)
-
-    @always_inline
-    fn __init__[width: Int = 1](inout self, *values: SIMD[type, width]):
-        """Creates a new vector with the given values."""
-        self.__init__[False]()
-        for idx in range(len(values)):
-            self.unsafe_set[width](idx * width, values[idx])
 
     fn __copyinit__(inout self, other: Self):
         self._data = other._data

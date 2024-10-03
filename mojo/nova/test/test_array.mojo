@@ -46,7 +46,7 @@ def test_init():
     var a = Array[CopyCounter](size=6)
     a = Array(rc, rc, rc, rc, rc, rc)
     a = Array(rc, rc, size=6)
-    var b = Array[CopyCounter](a)  # a = Array(a) # this fails right now, bug?
+    var b = Array[CopyCounter](a)
     b = Array[CopyCounter](a, a)
     b = Array[CopyCounter](a, a, size=10)
     b = Array(a.__iter__())

@@ -19,10 +19,9 @@ def test_init():
     var a = SmallArray[CopyCounter, 6]()
     a = SmallArray[CopyCounter, 6](rc, rc, rc, rc, rc, rc)
     a = SmallArray[CopyCounter, 6](fill=rc)
-    var b = a  # a = Array(a) # this fails right now, bug?
+    var b = a
     b = SmallArray[CopyCounter, 6](rc, rc, rc, rc, rc, rc)
     b = SmallArray[CopyCounter, 6](fill=rc)
-    # b = SmallArray[CopyCounter, 6](a.__iter__())
     assert_false(rc)
 
 

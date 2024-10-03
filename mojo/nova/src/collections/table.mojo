@@ -57,14 +57,13 @@ struct Table[
         for idx in range(cols * rows):
             _copy(self._data + idx, fill)
 
-    # Optional[T] until problem is fixed
     @always_inline
-    fn __init__(inout self, cols: Int, rows: Int, *, rule: fn (Int, Int) -> Optional[T]):
+    fn __init__(inout self, cols: Int, rows: Int, *, rule: fn (Int, Int) -> T):
         self.__init__[False](cols=cols, rows=rows)
         var idx = 0
         for y in range(rows):
             for x in range(cols):
-                _move(self._data + idx, rule(x, y).value())
+                _move(self._data + idx, rule(x, y))
                 idx += 1
 
     @always_inline
