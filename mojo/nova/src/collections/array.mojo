@@ -562,8 +562,8 @@ struct ArrayIter[
         return Self(self._src, self.start + (self.size - 1) * self.step, self.size, -self.step)
 
     @always_inline
-    fn __next__(inout self) -> Reference[T, lifetime]:
-        var result = Reference[T, lifetime].address_of(self._src[self.start])
+    fn __next__(inout self) -> Pointer[T, lifetime]:
+        var result = Pointer[T, lifetime].address_of(self._src[self.start])
         self.start += self.step
         self.size -= 1
         return result

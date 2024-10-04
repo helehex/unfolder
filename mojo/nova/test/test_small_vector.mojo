@@ -149,7 +149,7 @@ def test_init[type: DType]():
 def test_is[type: DType]():
     var a = SmallVector[type, 3](1, 2, 3)
     var b = a
-    var c = Reference.address_of(a)
+    var c = Pointer.address_of(a)
     assert_is(a, a)
     assert_is_not(a, b)
     assert_is(a, c[])

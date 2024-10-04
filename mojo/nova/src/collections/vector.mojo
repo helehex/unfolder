@@ -246,7 +246,7 @@ struct Vector[
         var result = Vector[target_type, bnd, fmt, spc]()
         result._data = self._data.bitcast[Scalar[target_type]]()
         result._size = (len(self) * bitwidthof[type]()) // bitwidthof[target_type]()
-        __mlir_op.`lit.ownership.mark_destroyed`(Reference.address_of(self)._value)
+        __mlir_op.`lit.ownership.mark_destroyed`(Pointer.address_of(self)._value)
         return result
 
     @always_inline
@@ -588,8 +588,8 @@ struct VectorIter[
         return Self(self._src, self.start + (self.size - 1) * self.step, self.size, -self.step)
 
     @always_inline
-    fn __next__(inout self) -> Reference[Scalar[type], lifetime]:
-        var result = Reference[Scalar[type], lifetime].address_of(self._src[self.start])
+    fn __next__(inout self) -> Pointer[Scalar[type], lifetime]:
+        var result = Pointer[Scalar[type], lifetime].address_of(self._src[self.start])
         self.start += self.step
         self.size -= 1
         return result
