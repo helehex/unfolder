@@ -622,6 +622,10 @@ struct ArrayIter[
         return self.size
 
     @always_inline
+    fn __hasmore__(self) -> Bool:
+        return self.__len__() > 0
+
+    @always_inline
     fn __eq__(self, rhs: Self) -> Bool:
         if len(self) != len(rhs):
             return False
