@@ -3,8 +3,9 @@
 **/temp/
 /src/collections/nova_set.mojo
 
-# ignore packages
+# ignore builds
 *.mojopkg
+*unfold
 
 # ignore environments
 .magic

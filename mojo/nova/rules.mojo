@@ -151,7 +151,8 @@ fn unfold_lg(seed: LGraph, origin: Int) -> LGraph:
 
     # width of the resulting graphs node table is the node count of the seed graph
     var width: Int = seed.node_count
-    var result = LGraph(max(width, 1), width + 1, seed.history + origin)
+    var result = LGraph(max(width, 1), 200, seed.history + origin)
+    # var result = LGraph(max(width, 1), width + 1, seed.history + origin)
 
     # if the seed graph is empty or does not contain the origin, give a single implicit self-loop.
     if width <= 0 or width < origin or origin < 1:
@@ -277,7 +278,7 @@ fn unfold_fast_breadth_lg[self_edge: Bool = True](seed: LGraph, origin: Int) -> 
                 var _y = seed.id2xy(xy[0])[1] + (-1 if above else 1)
                 var _id = seed.xy2id(Ind2(_x, _y))
                 result.reach(xy, _id)
-                var next_freq = Reference(next_trace[_id])
+                var next_freq = Pointer.address_of(next_trace[_id])
                 if curr_freq[_id] < curr_freq.total:
                     end = False
                     next_freq[].total += curr_freq.total
