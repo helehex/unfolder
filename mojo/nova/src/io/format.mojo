@@ -22,7 +22,7 @@ fn write_rep[T: Formattable](inout writer: Formatter, value: T, count: Int):
 #
 @always_inline
 fn write_align[
-    pad: StringSpan[StaticConstantLifetime], item_color: String = Color.none
+    pad: StringSpan[StaticConstantOrigin], item_color: String = Color.none
 ](inout writer: Formatter, span: StringSpan[_], new_len: Int):
     if len(span) > new_len:
         if new_len > 0:
@@ -225,19 +225,19 @@ fn write_sep[fmt: ArrayFormat](inout writer: Formatter, count: Int, align: Int):
 #         return self._value
 
 #     @always_inline
-#     fn __getattr__[name: StringLiteral](self) -> StringSpan[__lifetime_of(self)]:
+#     fn __getattr__[name: StringLiteral](self) -> StringSpan[__origin_of(self)]:
 #         var ptr = self._value.unsafe_ptr()
 #         @parameter
 #         if name == "beg":
-#             return StringSpan[__lifetime_of(self)](ptr, self._beg)
+#             return StringSpan[__origin_of(self)](ptr, self._beg)
 #         elif name == "pad":
-#             return StringSpan[__lifetime_of(self)]((ptr + self._beg), self._pad - self._beg)
+#             return StringSpan[__origin_of(self)]((ptr + self._beg), self._pad - self._beg)
 #         elif name == "sep":
-#             return StringSpan[__lifetime_of(self)]((ptr + self._pad), self._sep - self._pad)
+#             return StringSpan[__origin_of(self)]((ptr + self._pad), self._sep - self._pad)
 #         elif name == "end":
-#             return StringSpan[__lifetime_of(self)]((ptr + self._sep), self._end - self._sep)
+#             return StringSpan[__origin_of(self)]((ptr + self._sep), self._end - self._sep)
 #         else:
-#             return StringSpan[__lifetime_of(self)](ptr, 0)
+#             return StringSpan[__origin_of(self)](ptr, 0)
 
 
 # struct BoxFormat:

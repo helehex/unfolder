@@ -274,12 +274,12 @@ struct LGraph(Stringable, Value, Drawable):
 
 
 # @value
-# struct NeighborIter[mutability: Bool, //, lifetime: Lifetime[mutability].type, above: Bool, below: Bool]:
-#     var graph: Reference[LayerGraph, lifetime]
+# struct NeighborIter[mutability: Bool, //, origin: Origin[mutability].type, above: Bool, below: Bool]:
+#     var graph: Reference[LayerGraph, origin]
 #     var node: Int
 #     var x: Int
 
-#     fn __init__(inout self, ref[lifetime] graph: LayerGraph, node: Int):
+#     fn __init__(inout self, ref[origin] graph: LayerGraph, node: Int):
 #         self.graph = graph
 #         self.node = node
 #         self.x = 0
@@ -293,5 +293,5 @@ struct LGraph(Stringable, Value, Drawable):
 #         self.x += 1
 #         return result
 
-# struct LayerGraphPermutation[mutability: Bool, //, lifetime: Lifetime[mutability].type]:
+# struct LayerGraphPermutation[mutability: Bool, //, origin: Origin[mutability].type]:
 #     pass

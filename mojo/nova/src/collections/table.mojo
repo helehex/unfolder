@@ -90,53 +90,53 @@ struct Table[
     # +------( Subscript )------+ #
     #
     @always_inline
-    fn __getitem__(ref [_]self, col: Int, row: Int) -> ref [__lifetime_of(self)] T:
+    fn __getitem__(ref [_]self, col: Int, row: Int) -> ref [__origin_of(self)] T:
         return (self._data + (row * self._cols + col))[]
 
     @always_inline
-    fn __getitem__(ref [_]self, ind: Ind2) -> ref [__lifetime_of(self)] T:
+    fn __getitem__(ref [_]self, ind: Ind2) -> ref [__origin_of(self)] T:
         return self[ind[0], ind[1]]
 
     @always_inline
     fn __getitem__(
         ref [_]self, owned col: Slice, owned row: Int
-    ) -> ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)]:
+    ) -> ArrayIter[T, bnd[0], fmt.to_row_fmt(), __origin_of(self)]:
         bnd[0].adjust(col, self._cols)
         bnd[1].adjust(row, self._rows)
         var idx = row * self._cols
         var start = idx + col.start.value()
         var stop = idx + col.end.value()
-        return ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)](
+        return ArrayIter[T, bnd[0], fmt.to_row_fmt(), __origin_of(self)](
             self._data, Slice(start, stop, col.step)
         )
 
     @always_inline
     fn __getitem__(
         ref [_]self, owned col: Int, owned row: Slice
-    ) -> ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)]:
+    ) -> ArrayIter[T, bnd[1], fmt.to_col_fmt(), __origin_of(self)]:
         bnd[0].adjust(col, self._cols)
         bnd[1].adjust(row, self._rows)
         var start = row.start.value() * self._cols + col
         var stop = row.end.value() * self._cols + col
-        var step = self._cols * row.step
-        return ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)](
+        var step = self._cols * row.step.value()
+        return ArrayIter[T, bnd[1], fmt.to_col_fmt(), __origin_of(self)](
             self._data, Slice(start, stop, step)
         )
 
     @always_inline
-    fn row(ref [_]self, idx: Int) -> ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)]:
+    fn row(ref [_]self, idx: Int) -> ArrayIter[T, bnd[0], fmt.to_row_fmt(), __origin_of(self)]:
         var start = idx * self._cols
         var stop = start + self._cols
-        return ArrayIter[T, bnd[0], fmt.to_row_fmt(), __lifetime_of(self)](
+        return ArrayIter[T, bnd[0], fmt.to_row_fmt(), __origin_of(self)](
             self._data, Slice(start, stop)
         )
 
     @always_inline
-    fn col(ref [_]self, idx: Int) -> ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)]:
+    fn col(ref [_]self, idx: Int) -> ArrayIter[T, bnd[1], fmt.to_col_fmt(), __origin_of(self)]:
         var start = idx
         var stop = self._cols * self._rows
         var step = self._cols
-        return ArrayIter[T, bnd[1], fmt.to_col_fmt(), __lifetime_of(self)](
+        return ArrayIter[T, bnd[1], fmt.to_col_fmt(), __origin_of(self)](
             self._data, Slice(start, stop, step)
         )
 

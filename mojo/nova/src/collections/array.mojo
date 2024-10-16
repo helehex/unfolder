@@ -151,20 +151,20 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     @always_inline
     fn __getitem__[
         bnd: SpanBound = bnd
-    ](ref [_]self, owned idx: Int) -> ref [__lifetime_of(self)] T:
+    ](ref [_]self, owned idx: Int) -> ref [__origin_of(self)] T:
         bnd.adjust(idx, self._size)
         return self.unsafe_get(idx)
 
     @always_inline
-    fn unsafe_get(ref [_]self, owned idx: Int) -> ref [__lifetime_of(self)] T:
+    fn unsafe_get(ref [_]self, owned idx: Int) -> ref [__origin_of(self)] T:
         return (self._data + idx)[]
 
     @always_inline
     fn __getitem__[
         bnd: SpanBound = bnd
-    ](ref [_]self, owned slice: Slice) -> ArrayIter[T, bnd, fmt, __lifetime_of(self)]:
+    ](ref [_]self, owned slice: Slice) -> ArrayIter[T, bnd, fmt, __origin_of(self)]:
         bnd.adjust(slice, self._size)
-        return ArrayIter[T, bnd, fmt, __lifetime_of(self)](self._data, slice)
+        return ArrayIter[T, bnd, fmt, __origin_of(self)](self._data, slice)
 
     # @always_inline
     # fn __setitem__(inout self, owned slice: Slice, value: ArrayIter[T, _, _, _]):
@@ -184,11 +184,11 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     # +------( Iterate )------+ #
     #
     @always_inline
-    fn __iter__(ref [_]self) -> ArrayIter[T, bnd, fmt, __lifetime_of(self)]:
+    fn __iter__(ref [_]self) -> ArrayIter[T, bnd, fmt, __origin_of(self)]:
         return self[:]
 
     @always_inline
-    fn __reversed__(ref [_]self) -> ArrayIter[T, bnd, fmt, __lifetime_of(self)]:
+    fn __reversed__(ref [_]self) -> ArrayIter[T, bnd, fmt, __origin_of(self)]:
         return self[::-1]
 
     # +------( Format )------+ #
@@ -476,7 +476,7 @@ struct ArrayIter[
     T: Value,
     bnd: SpanBound,
     fmt: ArrayFormat,
-    lifetime: Lifetime[mutability].type,
+    origin: Origin[mutability].type,
 ](Formattable, Sized, Value):
     """Span for Array.
 
@@ -485,7 +485,7 @@ struct ArrayIter[
         T: The type of elements in the array.
         bnd: The boundary condition to use with subscripts.
         fmt: The default format used when printing the array.
-        lifetime: The lifetime of the array.
+        origin: The origin of the array.
     """
 
     # +------< Data >------+ #
@@ -515,15 +515,15 @@ struct ArrayIter[
     fn __init__(inout self, src: UnsafePointer[T], owned slice: Slice):
         self._src = src
         self.start = slice.start.value()
-        self.size = max(ceildiv(slice.end.value() - self.start, slice.step), 0)
-        self.step = slice.step
+        self.size = max(ceildiv(slice.end.value() - self.start, slice.step.value()), 0)
+        self.step = slice.step.value()
 
     @always_inline
-    fn __init__(inout self, ref [lifetime]src: Array[T, bnd, fmt]):
-        self = ArrayIter[T, bnd, fmt, lifetime](src._data, src._size)
+    fn __init__(inout self, ref [origin]src: Array[T, bnd, fmt]):
+        self = ArrayIter[T, bnd, fmt, origin](src._data, src._size)
 
     @always_inline
-    fn __init__(inout self, owned other: ArrayIter[T, _, _, lifetime]):
+    fn __init__(inout self, owned other: ArrayIter[T, _, _, origin]):
         self._src = other._src
         self.start = other.start
         self.step = other.step
@@ -532,7 +532,7 @@ struct ArrayIter[
     # +------( Subscript )------+ #
     #
     @always_inline
-    fn __getitem__(self, owned idx: Int) -> ref [lifetime] T:
+    fn __getitem__(self, owned idx: Int) -> ref [origin] T:
         bnd.adjust(idx, self.size)
         return (self._src + self.start + idx * self.step)[]
 
@@ -540,8 +540,8 @@ struct ArrayIter[
     fn __getitem__(self, owned slice: Slice) -> Self:
         bnd.adjust(slice, self.size)
         var start = slice.start.value() * self.step + self.start
-        var step = slice.step * self.step
-        var size = ceildiv(slice.end.value() - slice.start.value(), slice.step)
+        var step = slice.step.value() * self.step
+        var size = ceildiv(slice.end.value() - slice.start.value(), slice.step.value())
         return Self(self._src, start, size, step)
 
     # @always_inline
@@ -562,8 +562,8 @@ struct ArrayIter[
         return Self(self._src, self.start + (self.size - 1) * self.step, self.size, -self.step)
 
     @always_inline
-    fn __next__(inout self) -> Pointer[T, lifetime]:
-        var result = Pointer[T, lifetime].address_of(self._src[self.start])
+    fn __next__(inout self) -> Pointer[T, origin]:
+        var result = Pointer[T, origin].address_of(self._src[self.start])
         self.start += self.step
         self.size -= 1
         return result
@@ -684,11 +684,11 @@ struct ArrayIter[
         return result
 
     @always_inline
-    fn clear[lif: MutableLifetime, //](self: ArrayIter[T, bnd, fmt, lif]):
+    fn clear[lif: MutableOrigin, //](self: ArrayIter[T, bnd, fmt, lif]):
         self.fill(T())
 
     @always_inline
-    fn fill[lif: MutableLifetime, //](self: ArrayIter[T, bnd, fmt, lif], value: T):
+    fn fill[lif: MutableOrigin, //](self: ArrayIter[T, bnd, fmt, lif], value: T):
         for item in self:
             var ptr = UnsafePointer.address_of(item[])
             _del(ptr)
@@ -760,7 +760,7 @@ struct ArrayFormat:
         self = Self(span)
 
     @always_inline
-    fn __init__[lif: ImmutableLifetime](inout self, parse: StringSpan[lif]):
+    fn __init__[lif: ImmutableOrigin](inout self, parse: StringSpan[lif]):
         var p = parse.split("\\", 6)
         if len(p) == 0:
             self = Self()

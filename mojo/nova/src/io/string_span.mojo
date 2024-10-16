@@ -13,34 +13,34 @@ from utils import Span, StringRef
 #
 #
 @value
-struct StringSpan[is_mutable: Bool, //, lifetime: Lifetime[is_mutable].type](Value):
+struct StringSpan[is_mutable: Bool, //, origin: Origin[is_mutable].type](Value):
     """String Span."""
 
     # +------< Data >------+ #
     #
-    var _span: Span[UInt8, lifetime]
+    var _span: Span[UInt8, origin]
 
     # +------( Lifecycle )------+ #
     #
     @always_inline
     fn __init__(inout self):
-        self._span = Span[UInt8, lifetime](unsafe_ptr=UnsafePointer[UInt8](), len=0)
+        self._span = Span[UInt8, origin](unsafe_ptr=UnsafePointer[UInt8](), len=0)
 
     @always_inline
-    fn __init__(inout self, owned unsafe_from_utf8: Span[UInt8, lifetime]):
+    fn __init__(inout self, owned unsafe_from_utf8: Span[UInt8, origin]):
         self._span = unsafe_from_utf8^
 
     @always_inline
     fn __init__(inout self, ptr: UnsafePointer[UInt8], len: Int):
-        self._span = Span[UInt8, lifetime](unsafe_ptr=ptr, len=len)
+        self._span = Span[UInt8, origin](unsafe_ptr=ptr, len=len)
 
     @always_inline
-    fn __init__(inout self, ref [lifetime]string: String):
-        self._span = Span[UInt8, lifetime](unsafe_ptr=string.unsafe_ptr(), len=len(string))
+    fn __init__(inout self, ref [origin]string: String):
+        self._span = Span[UInt8, origin](unsafe_ptr=string.unsafe_ptr(), len=len(string))
 
     @always_inline
-    fn __init__(inout self, ref [lifetime]string: StringLiteral):
-        self._span = Span[UInt8, lifetime](unsafe_ptr=string.unsafe_ptr(), len=len(string))
+    fn __init__(inout self, ref [origin]string: StringLiteral):
+        self._span = Span[UInt8, origin](unsafe_ptr=string.unsafe_ptr(), len=len(string))
 
     # +------( Operations )------+ #
     #
@@ -103,7 +103,7 @@ struct StringSpan[is_mutable: Bool, //, lifetime: Lifetime[is_mutable].type](Val
         return False
 
     fn split[
-        lif: ImmutableLifetime
+        lif: ImmutableOrigin
     ](self: StringSpan[lif], sep: String, max: Int) -> List[StringSpan[lif]]:
         var result = List[StringSpan[lif]](capacity=8)
         var remaining = self
@@ -116,7 +116,7 @@ struct StringSpan[is_mutable: Bool, //, lifetime: Lifetime[is_mutable].type](Val
         return result
 
     fn split[
-        lif: ImmutableLifetime
+        lif: ImmutableOrigin
     ](self: StringSpan[lif], sep: String, stop: String) -> List[StringSpan[lif]]:
         var result = List[StringSpan[lif]](capacity=8)
         var remaining = self
@@ -128,7 +128,7 @@ struct StringSpan[is_mutable: Bool, //, lifetime: Lifetime[is_mutable].type](Val
         _split[_stop](sep, result, remaining)
         return result
 
-    fn split[lif: ImmutableLifetime](self: StringSpan[lif], sep: String) -> List[StringSpan[lif]]:
+    fn split[lif: ImmutableOrigin](self: StringSpan[lif], sep: String) -> List[StringSpan[lif]]:
         var result = List[StringSpan[lif]](capacity=8)
         var remaining = self
 
@@ -143,8 +143,8 @@ struct StringSpan[is_mutable: Bool, //, lifetime: Lifetime[is_mutable].type](Val
     fn __getitem__(self, owned slice: Slice) -> Self:
         SpanBound.Lap.adjust(slice, len(self._span))
         var ptr = self._span._data + slice.start.value()
-        return Span[UInt8, lifetime](
-            unsafe_ptr=ptr, len=(slice.end.value() - slice.start.value()) // slice.step
+        return Span[UInt8, origin](
+            unsafe_ptr=ptr, len=(slice.end.value() - slice.start.value()) // slice.step.value()
         )
 
     @always_inline
@@ -152,7 +152,7 @@ struct StringSpan[is_mutable: Bool, //, lifetime: Lifetime[is_mutable].type](Val
         writer._write_func(writer._write_func_arg, self._strref_dangerous())
 
     @always_inline
-    fn as_bytes_slice(self) -> Span[UInt8, lifetime]:
+    fn as_bytes_slice(self) -> Span[UInt8, origin]:
         return self._span
 
     @always_inline
@@ -176,16 +176,16 @@ struct StringSpan[is_mutable: Bool, //, lifetime: Lifetime[is_mutable].type](Val
 #
 #
 fn _split[
-    lifetime: ImmutableLifetime, //, stop_condition: fn () capturing -> Bool
-](sep: String, inout result: List[StringSpan[lifetime]], inout remaining: StringSpan[lifetime]):
-    var current = StringSpan[lifetime](remaining._span._data, 0)
+    origin: ImmutableOrigin, //, stop_condition: fn () capturing -> Bool
+](sep: String, inout result: List[StringSpan[origin]], inout remaining: StringSpan[origin]):
+    var current = StringSpan[origin](remaining._span._data, 0)
 
     while True:
         if remaining[: len(sep)] == sep:
             result += current
             remaining._span._data += len(sep)
             remaining._span._len -= len(sep)
-            current = StringSpan[lifetime](remaining._span._data, 0)
+            current = StringSpan[origin](remaining._span._data, 0)
             if stop_condition():
                 return
         if len(remaining) <= len(sep):

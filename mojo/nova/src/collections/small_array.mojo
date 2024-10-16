@@ -38,7 +38,9 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
         if clear:
             self.__init__(T())
         else:
-            self._data = __mlir_op.`kgen.undef`[_type = Self.Data]()
+            self._data = __mlir_op.`kgen.param.constant`[
+            _type = Self.Data, value = __mlir_attr[`#kgen.unknown : `, Self.Data]
+        ]()
 
     @always_inline
     fn __init__(inout self, fill: T):
@@ -84,25 +86,25 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
     # +------( Iterate )------+ #
     #
     @always_inline
-    fn __iter__(ref [_]self) -> ArrayIter[T, bnd, fmt, __lifetime_of(self)]:
+    fn __iter__(ref [_]self) -> ArrayIter[T, bnd, fmt, __origin_of(self)]:
         return self[:]
 
     # +------( Subscript )------+ #
     #
     @always_inline
-    fn __getitem__(ref [_]self, owned idx: Int) -> ref [__lifetime_of(self)] T:
+    fn __getitem__(ref [_]self, owned idx: Int) -> ref [__origin_of(self)] T:
         bnd.adjust(idx, size)
         return self.unsafe_ref(idx)
 
     @always_inline
     fn __getitem__[
         bnd: SpanBound = bnd
-    ](ref [_]self, owned slice: Slice) -> ArrayIter[T, bnd, fmt, __lifetime_of(self)]:
+    ](ref [_]self, owned slice: Slice) -> ArrayIter[T, bnd, fmt, __origin_of(self)]:
         bnd.adjust(slice, size)
-        return ArrayIter[T, bnd, fmt, __lifetime_of(self)](self.unsafe_ptr(), slice)
+        return ArrayIter[T, bnd, fmt, __origin_of(self)](self.unsafe_ptr(), slice)
 
     @always_inline
-    fn unsafe_ref(ref [_]self, idx: Int) -> ref [__lifetime_of(self)] T:
+    fn unsafe_ref(ref [_]self, idx: Int) -> ref [__origin_of(self)] T:
         return UnsafePointer(
             __mlir_op.`pop.array.gep`(UnsafePointer.address_of(self._data).address, idx.value)
         )[]

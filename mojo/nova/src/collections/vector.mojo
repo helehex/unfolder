@@ -190,9 +190,9 @@ struct Vector[
     @always_inline
     fn __getitem__[
         bnd: SpanBound = bnd
-    ](ref [_]self, owned slice: Slice) -> VectorIter[type, bnd, fmt, __lifetime_of(self), spc]:
+    ](ref [_]self, owned slice: Slice) -> VectorIter[type, bnd, fmt, __origin_of(self), spc]:
         bnd.adjust(slice, self._size)
-        return VectorIter[type, bnd, fmt, __lifetime_of(self), spc](self._data, slice)
+        return VectorIter[type, bnd, fmt, __origin_of(self), spc](self._data, slice)
 
     @always_inline
     fn __setitem__(inout self, owned slice: Slice, value: VectorIter[type, _, _, _, _]):
@@ -211,11 +211,11 @@ struct Vector[
     # +------( Iterate )------+ #
     #
     @always_inline
-    fn __iter__(ref [_]self) -> VectorIter[type, bnd, fmt, __lifetime_of(self), spc]:
+    fn __iter__(ref [_]self) -> VectorIter[type, bnd, fmt, __origin_of(self), spc]:
         return self[:]
 
     @always_inline
-    fn __reversed__(ref [_]self) -> VectorIter[type, bnd, fmt, __lifetime_of(self), spc]:
+    fn __reversed__(ref [_]self) -> VectorIter[type, bnd, fmt, __origin_of(self), spc]:
         return self[::-1]
 
     # +------( Operations )------+ #
@@ -489,7 +489,7 @@ struct VectorIter[
     type: DType,
     bnd: SpanBound,
     fmt: ArrayFormat,
-    lifetime: Lifetime[mutability].type,
+    origin: Origin[mutability].type,
     spc: AddressSpace = AddressSpace.GENERIC,
 ](Formattable, Sized, Value):
     """Span for Array.
@@ -499,7 +499,7 @@ struct VectorIter[
         type: The DType of the vector.
         bnd: The boundary condition to use with subscripts.
         fmt: The default format used when printing the array.
-        lifetime: The lifetime of the array.
+        origin: The origin of the array.
         spc: The address space.
     """
 
@@ -534,12 +534,12 @@ struct VectorIter[
     fn __init__(inout self, src: Self.Pointer, owned slice: Slice):
         self._src = src
         self.start = slice.start.value()
-        self.size = max(ceildiv(slice.end.value() - self.start, slice.step), 0)
-        self.step = slice.step
+        self.size = max(ceildiv(slice.end.value() - self.start, slice.step.value()), 0)
+        self.step = slice.step.value()
 
     @always_inline
-    fn __init__(inout self, ref [lifetime, spc._value.value]src: Vector[type, bnd, fmt, spc]):
-        self = VectorIter[type, bnd, fmt, lifetime, spc](src._data, src._size)
+    fn __init__(inout self, ref [origin, spc._value.value]src: Vector[type, bnd, fmt, spc]):
+        self = VectorIter[type, bnd, fmt, origin, spc](src._data, src._size)
 
     # +------( Subscript )------+ #
     #
@@ -557,15 +557,15 @@ struct VectorIter[
     fn __getitem__(self, owned slice: Slice) -> Self:
         bnd.adjust(slice, self.size)
         var start = slice.start.value() * self.step + self.start
-        var step = slice.step * self.step
-        var size = ceildiv(slice.end.value() - slice.start.value(), slice.step)
+        var step = slice.step.value() * self.step
+        var size = ceildiv(slice.end.value() - slice.start.value(), slice.step.value())
         return Self(self._src, start, size, step)
 
     @always_inline
     fn __setitem__[
-        lifetime: MutableLifetime
+        origin: MutableOrigin
     ](
-        self: VectorIter[type, bnd, fmt, lifetime, spc],
+        self: VectorIter[type, bnd, fmt, origin, spc],
         owned slice: Slice,
         value: VectorIter[type, _, _, _, _],
     ):
@@ -574,7 +574,7 @@ struct VectorIter[
             self[idx] = value[idx]
 
     @always_inline
-    fn unsafe_ref(self, owned idx: Int) -> ref [lifetime] Scalar[type]:
+    fn unsafe_ref(self, owned idx: Int) -> ref [origin] Scalar[type]:
         return (self._src + self.start + idx * self.step)[]
 
     # +------( Iterate )------+ #
@@ -588,8 +588,8 @@ struct VectorIter[
         return Self(self._src, self.start + (self.size - 1) * self.step, self.size, -self.step)
 
     @always_inline
-    fn __next__(inout self) -> Pointer[Scalar[type], lifetime]:
-        var result = Pointer[Scalar[type], lifetime].address_of(self._src[self.start])
+    fn __next__(inout self) -> Pointer[Scalar[type], origin]:
+        var result = Pointer[Scalar[type], origin].address_of(self._src[self.start])
         self.start += self.step
         self.size -= 1
         return result
@@ -712,12 +712,12 @@ struct VectorIter[
         return result
 
     @always_inline
-    fn clear[lifetime: MutableLifetime, //](self: VectorIter[type, bnd, fmt, lifetime, spc]):
+    fn clear[origin: MutableOrigin, //](self: VectorIter[type, bnd, fmt, origin, spc]):
         self.fill(0)
 
     @always_inline
     fn fill[
-        lifetime: MutableLifetime, //
-    ](self: VectorIter[type, bnd, fmt, lifetime, spc], value: Scalar[type]):
+        origin: MutableOrigin, //
+    ](self: VectorIter[type, bnd, fmt, origin, spc], value: Scalar[type]):
         for item in self:
             item[] = value

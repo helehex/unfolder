@@ -37,7 +37,9 @@ struct SmallVector[
         if clear:
             self.__init__(Scalar[type]())
         else:
-            self._data = __mlir_op.`kgen.undef`[_type = Self.Data]()
+            self._data = __mlir_op.`kgen.param.constant`[
+            _type = Self.Data, value = __mlir_attr[`#kgen.unknown : `, Self.Data]
+        ]()
 
     @always_inline
     fn __init__(inout self, fill: Scalar[type] = 0):
@@ -132,7 +134,7 @@ struct SmallVector[
     # +------( Iterate )------+ #
     #
     @always_inline
-    fn __iter__(ref [_]self) -> VectorIter[type, bnd, fmt, __lifetime_of(self)]:
+    fn __iter__(ref [_]self) -> VectorIter[type, bnd, fmt, __origin_of(self)]:
         return self[:]
 
     # +------( Subscript )------+ #
@@ -183,13 +185,13 @@ struct SmallVector[
     @always_inline
     fn __getitem__[
         bnd: SpanBound = bnd
-    ](ref [_]self, owned slice: Slice) -> VectorIter[type, bnd, fmt, __lifetime_of(self)]:
+    ](ref [_]self, owned slice: Slice) -> VectorIter[type, bnd, fmt, __origin_of(self)]:
         bnd.adjust(slice, size)
-        return VectorIter[type, bnd, fmt, __lifetime_of(self)](self.unsafe_ptr(), slice)
+        return VectorIter[type, bnd, fmt, __origin_of(self)](self.unsafe_ptr(), slice)
 
     @always_inline
     fn __setitem__[
-        lif: MutableLifetime, //
+        lif: MutableOrigin, //
     ](ref [lif]self, owned slice: Slice, value: VectorIter[type, _, _, _, _]):
         var sliced_self = self[slice]
         for idx in range(min(len(sliced_self), len(value))):
