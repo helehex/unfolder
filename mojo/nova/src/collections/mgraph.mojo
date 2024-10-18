@@ -116,17 +116,15 @@ struct MGraph(Stringable, Value, Drawable):
 
     fn to_string(self, str_nodes: Bool = True, str_edges: Bool = True) -> String:
         var result: String = ""
-        var writer = result._unsafe_to_formatter()
-        self.format_to(writer, str_nodes, str_edges)
+        self.write_to(result, str_nodes, str_edges)
         return result
 
     fn to_string_relations(self) -> String:
         var result: String = ""
-        var writer = result._unsafe_to_formatter()
-        self.format_relations_to(writer)
+        self.write_relations_to(result)
         return result
 
-    fn format_to(self, inout writer: Formatter, str_nodes: Bool = True, str_edges: Bool = True):
+    fn write_to[WriterType: Writer](self, inout writer: WriterType, str_nodes: Bool = True, str_edges: Bool = True):
         """Format the graph."""
         writer.write("history: ", self.history, "\n")
         writer.write("width: ", self.width, "\n")
@@ -143,7 +141,7 @@ struct MGraph(Stringable, Value, Drawable):
         writer.write("id to lb: ", self._id2lb, "\n")
         writer.write("lb to id: ", self._lb2id, "\n")
 
-    fn format_relations_to(self, inout writer: Formatter):
+    fn write_relations_to[WriterType: Writer](self, inout writer: WriterType):
         """Format the graph as a set of relations: {1->2, 2->3, 3->0, ...}."""
         writer.write("{")
         var first = True

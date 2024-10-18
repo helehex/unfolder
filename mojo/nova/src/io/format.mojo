@@ -10,7 +10,7 @@
 #
 #
 @always_inline
-fn write_rep[T: Formattable](inout writer: Formatter, value: T, count: Int):
+fn write_rep[WriterType: Writer, //, WritableType: Writable](inout writer: WriterType, value: WritableType, count: Int):
     for _ in range(count):
         writer.write(value)
 
@@ -22,8 +22,8 @@ fn write_rep[T: Formattable](inout writer: Formatter, value: T, count: Int):
 #
 @always_inline
 fn write_align[
-    pad: StringSpan[StaticConstantOrigin], item_color: String = Color.none
-](inout writer: Formatter, span: StringSpan[_], new_len: Int):
+    WriterType: Writer, //, pad: StringSpan[StaticConstantOrigin], item_color: String = Color.none
+](inout writer: WriterType, span: StringSpan[_], new_len: Int):
     if len(span) > new_len:
         if new_len > 0:
             var es = max(new_len - 1, 0)
@@ -39,14 +39,14 @@ fn write_align[
 #
 #
 @always_inline
-fn write_sep[fmt: ArrayFormat](inout writer: Formatter, len: Int):
+fn write_sep[WriterType: Writer, //, fmt: ArrayFormat](inout writer: WriterType, len: Int):
     writer.write(fmt.beg)
     write_rep(writer, fmt.sep, len)
     writer.write(fmt.end)
 
 
 @always_inline
-fn write_sep[write: fn () capturing -> None, fmt: ArrayFormat](inout writer: Formatter, count: Int):
+fn write_sep[WriterType: Writer, //, write: fn () capturing -> None, fmt: ArrayFormat](inout writer: WriterType, count: Int):
     alias sep_color = Color.clear if (
         bool(fmt.item_color) and not fmt.color
     ) else fmt.color  # remove bool()?
@@ -65,8 +65,8 @@ fn write_sep[write: fn () capturing -> None, fmt: ArrayFormat](inout writer: For
 
 @always_inline
 fn write_sep[
-    write: fn (Int) capturing -> None, fmt: ArrayFormat
-](inout writer: Formatter, count: Int):
+    WriterType: Writer, //, write: fn (Int) capturing -> None, fmt: ArrayFormat
+](inout writer: WriterType, count: Int):
     alias sep_color = Color.clear if (
         bool(fmt.item_color) and not fmt.color
     ) else fmt.color  # remove bool()?
@@ -86,8 +86,8 @@ fn write_sep[
 
 @always_inline
 fn write_sep[
-    read: fn () capturing -> String, fmt: ArrayFormat
-](inout writer: Formatter, count: Int, align: Int):
+    WriterType: Writer, //, read: fn () capturing -> String, fmt: ArrayFormat
+](inout writer: WriterType, count: Int, align: Int):
     @parameter
     @always_inline
     fn _str():
@@ -98,8 +98,8 @@ fn write_sep[
 
 @always_inline
 fn write_sep[
-    read: fn (Int) capturing -> String, fmt: ArrayFormat
-](inout writer: Formatter, count: Int, align: Int):
+    WriterType: Writer, //, read: fn (Int) capturing -> String, fmt: ArrayFormat
+](inout writer: WriterType, count: Int, align: Int):
     @parameter
     @always_inline
     fn _str(idx: Int):
@@ -109,7 +109,7 @@ fn write_sep[
 
 
 @always_inline
-fn write_sep[fmt: ArrayFormat](inout writer: Formatter, count: Int, align: Int):
+fn write_sep[WriterType: Writer, //, fmt: ArrayFormat](inout writer: WriterType, count: Int, align: Int):
     @parameter
     @always_inline
     fn _str():

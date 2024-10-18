@@ -13,7 +13,7 @@ from utils import Span, StringRef
 #
 #
 @value
-struct StringSpan[is_mutable: Bool, //, origin: Origin[is_mutable].type](Value):
+struct StringSpan[is_mutable: Bool, //, origin: Origin[is_mutable].type](Value, Writable):
     """String Span."""
 
     # +------< Data >------+ #
@@ -42,20 +42,18 @@ struct StringSpan[is_mutable: Bool, //, origin: Origin[is_mutable].type](Value):
     fn __init__(inout self, ref [origin]string: StringLiteral):
         self._span = Span[UInt8, origin](unsafe_ptr=string.unsafe_ptr(), len=len(string))
 
+    # +------( Format )------+ #
+    #
+    @no_inline
+    fn __str__(self) -> String:
+        return String.write(self)
+
+    @no_inline
+    fn write_to[WriterType: Writer](self, inout writer: WriterType):
+        writer.write_bytes(self.as_bytes_slice())
+
     # +------( Operations )------+ #
     #
-    fn __str__(self) -> String:
-        var length: Int = len(self.as_bytes_slice())
-        var buffer = String._buffer_type()
-        # +1 for null terminator, initialized to 0
-        buffer.resize(length + 1, 0)
-        memcpy(
-            dest=buffer.data,
-            src=self.as_bytes_slice().unsafe_ptr(),
-            count=length,
-        )
-        return buffer^
-
     fn __len__(self) -> Int:
         return len(self._span)
 
@@ -146,10 +144,6 @@ struct StringSpan[is_mutable: Bool, //, origin: Origin[is_mutable].type](Value):
         return Span[UInt8, origin](
             unsafe_ptr=ptr, len=(slice.end.value() - slice.start.value()) // slice.step.value()
         )
-
-    @always_inline
-    fn format_to(self, inout writer: Formatter):
-        writer._write_func(writer._write_func_arg, self._strref_dangerous())
 
     @always_inline
     fn as_bytes_slice(self) -> Span[UInt8, origin]:

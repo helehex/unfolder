@@ -12,7 +12,7 @@ from math import ceildiv
 # +----------------------------------------------------------------------------------------------+ #
 #
 struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"](
-    Formattable, Sized, Boolable, Value
+    Writable, Sized, Boolable, Value
 ):
     """A heap allocated array.
 
@@ -198,12 +198,12 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         return self[:].__str__[fmt]()
 
     @always_inline
-    fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter):
-        return self[:].format_to[fmt](writer)
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType):
+        return self[:].write_to[fmt=fmt](writer)
 
     @always_inline
-    fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter, align: Int):
-        return self[:].format_to[fmt](writer, align)
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType, align: Int):
+        return self[:].write_to[fmt=fmt](writer, align)
 
     @staticmethod
     @always_inline
@@ -477,7 +477,7 @@ struct ArrayIter[
     bnd: SpanBound,
     fmt: ArrayFormat,
     origin: Origin[mutability].type,
-](Formattable, Sized, Value):
+](Writable, Sized, Value):
     """Span for Array.
 
     Parameters:
@@ -514,9 +514,9 @@ struct ArrayIter[
     @always_inline
     fn __init__(inout self, src: UnsafePointer[T], owned slice: Slice):
         self._src = src
+        self.step = slice.step.or_else(1)
         self.start = slice.start.value()
-        self.size = max(ceildiv(slice.end.value() - self.start, slice.step.value()), 0)
-        self.step = slice.step.value()
+        self.size = max(ceildiv(slice.end.value() - self.start, self.step), 0)
 
     @always_inline
     fn __init__(inout self, ref [origin]src: Array[T, bnd, fmt]):
@@ -573,8 +573,7 @@ struct ArrayIter[
     @always_inline
     fn __str__[fmt: ArrayFormat = fmt](self) -> String:
         var result: String = ""
-        var writer = result._unsafe_to_formatter()
-        self.format_to[fmt](writer)
+        self.write_to[fmt=fmt](result)
         return result
 
     @always_inline
@@ -585,10 +584,10 @@ struct ArrayIter[
         return longest
 
     @always_inline
-    fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter):
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType):
         @parameter
         if fmt.pad:
-            self.format_to[fmt](writer, self._get_item_align())
+            self.write_to[fmt=fmt](writer, self._get_item_align())
             return
 
         var iter = self.__iter__()
@@ -601,7 +600,7 @@ struct ArrayIter[
         write_sep[_write, fmt](writer, len(iter))
 
     @always_inline
-    fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter, align: Int):
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType, align: Int):
         var iter = self.__iter__()
 
         @parameter

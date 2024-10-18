@@ -17,7 +17,7 @@ struct Table[
     T: Value,
     bnd: Tuple[SpanBound, SpanBound] = (SpanBound.Lap, SpanBound.Lap),
     fmt: TableFormat = TableFormat(),
-](Formattable, Value):
+](Writable, Value):
     """A heap allocated table.
 
     Parameters:
@@ -90,11 +90,11 @@ struct Table[
     # +------( Subscript )------+ #
     #
     @always_inline
-    fn __getitem__(ref [_]self, col: Int, row: Int) -> ref [__origin_of(self)] T:
+    fn __getitem__(ref [_]self, col: Int, row: Int) -> ref [self] T:
         return (self._data + (row * self._cols + col))[]
 
     @always_inline
-    fn __getitem__(ref [_]self, ind: Ind2) -> ref [__origin_of(self)] T:
+    fn __getitem__(ref [_]self, ind: Ind2) -> ref [self] T:
         return self[ind[0], ind[1]]
 
     @always_inline
@@ -144,25 +144,19 @@ struct Table[
     #
     @always_inline
     fn __str__(self) -> String:
-        return String.format_sequence(self)
+        return String.write(self)
 
     @always_inline
-    fn format[fmt: TableFormat = fmt](self) -> String:
+    fn to_string[fmt: TableFormat = fmt](self) -> String:
         var result: String = ""
-        var formatter = result._unsafe_to_formatter()
-        self.format_to[fmt](formatter)
+        self.write_to[fmt=fmt](result)
         return result
 
     @always_inline
-    fn format[fmt: TableFormat = fmt](self, align: Int) -> String:
+    fn to_string[fmt: TableFormat = fmt](self, align: Int) -> String:
         var result: String = ""
-        var formatter = result._unsafe_to_formatter()
-        self.format_to[fmt](formatter, align)
+        self.write_to[fmt=fmt](result, align)
         return result
-
-    @always_inline
-    fn format_to(self, inout writer: Formatter):
-        self.format_to[fmt](writer)
 
     @always_inline
     fn _get_item_align(self) -> Int:
@@ -181,11 +175,11 @@ struct Table[
         return result
 
     @always_inline
-    fn format_to[fmt: TableFormat](self, inout writer: Formatter):
-        self.format_to[fmt](writer, self._get_item_align())
+    fn write_to[WriterType: Writer, //, fmt: TableFormat = fmt](self, inout writer: WriterType):
+        self.write_to[fmt=fmt](writer, self._get_item_align())
 
     @always_inline
-    fn format_to[fmt: TableFormat = fmt](self, inout writer: Formatter, align: Int):
+    fn write_to[WriterType: Writer, //, fmt: TableFormat = fmt](self, inout writer: WriterType, align: Int):
         var pad = self._get_tbl_pad[fmt]()
 
         if self._cols <= 0 or self._rows <= 0:
@@ -283,8 +277,8 @@ struct Table[
                     ),
                 ](writer, 1, pad + 1)
 
-            self.row(idx).format_to[
-                ArrayFormat(Box.V, fmt.item_pad, Box.v, Box.v, fmt.box_color, fmt.item_color)
+            self.row(idx).write_to[
+                fmt=ArrayFormat(Box.V, fmt.item_pad, Box.v, Box.v, fmt.box_color, fmt.item_color)
             ](writer, align)
 
         write_sep[_str_rows, ArrayFormat("", fmt.item_pad, "\n", "\n", fmt.box_color)](

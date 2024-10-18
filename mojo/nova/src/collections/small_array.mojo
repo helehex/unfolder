@@ -15,7 +15,7 @@ fn _small_array_construction_checks[size: Int]():
 # +----------------------------------------------------------------------------------------------+ #
 #
 struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"](
-    Formattable, Sized, Value
+    Writable, Sized, Value
 ):
     """A stack allocated collection of homogeneous scalars, with static size, and appending semantics.
     """
@@ -129,8 +129,7 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
     @always_inline
     fn __str__[fmt: ArrayFormat = fmt](self) -> String:
         var result: String = ""
-        var writer = result._unsafe_to_formatter()
-        self.format_to[fmt](writer)
+        self.write_to[fmt=fmt](result)
         return result
 
     @always_inline
@@ -141,10 +140,10 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
         return longest
 
     @always_inline
-    fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter):
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType):
         @parameter
         if fmt.pad:
-            self.format_to[fmt](writer, self._get_item_align())
+            self.write_to[fmt=fmt](writer, self._get_item_align())
             return
 
         var iter = self.__iter__()
@@ -157,7 +156,7 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
         write_sep[_write, fmt](writer, len(iter))
 
     @always_inline
-    fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter, align: Int):
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType, align: Int):
         var iter = self.__iter__()
 
         @parameter

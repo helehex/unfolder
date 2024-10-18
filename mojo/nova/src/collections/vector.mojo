@@ -18,7 +18,7 @@ struct Vector[
     bnd: SpanBound = SpanBound.Lap,
     fmt: ArrayFormat = "[, ]",
     spc: AddressSpace = AddressSpace.GENERIC,
-](Formattable, Sized, Value):
+](Writable, Sized, Value):
     """A heap allocated collection of homogeneous elements, with fixed size, and arithmetic semantics.
 
     Parameters:
@@ -137,12 +137,12 @@ struct Vector[
         return self[:].__str__[fmt]()
 
     @always_inline
-    fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter):
-        return self[:].format_to[fmt](writer)
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType):
+        return self[:].write_to[fmt=fmt](writer)
 
     @always_inline
-    fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter, align: Int):
-        return self[:].format_to[fmt](writer, align)
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType, align: Int):
+        return self[:].write_to[fmt=fmt](writer, align)
 
     # +------( Subscript )------+ #
     #
@@ -491,7 +491,7 @@ struct VectorIter[
     fmt: ArrayFormat,
     origin: Origin[mutability].type,
     spc: AddressSpace = AddressSpace.GENERIC,
-](Formattable, Sized, Value):
+](Writable, Sized, Value):
     """Span for Array.
 
     Parameters:
@@ -599,8 +599,7 @@ struct VectorIter[
     @always_inline
     fn __str__[fmt: ArrayFormat = fmt](self) -> String:
         var result: String = ""
-        var writer = result._unsafe_to_formatter()
-        self.format_to[fmt](writer)
+        self.write_to[fmt=fmt](result)
         return result
 
     @always_inline
@@ -611,10 +610,10 @@ struct VectorIter[
         return longest
 
     @always_inline
-    fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter):
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType):
         @parameter
         if fmt.pad:
-            self.format_to[fmt](writer, self._get_item_align())
+            self.write_to[fmt=fmt](writer, self._get_item_align())
             return
 
         var _self = self
@@ -627,7 +626,7 @@ struct VectorIter[
         write_sep[_write, fmt](writer, len(self))
 
     @always_inline
-    fn format_to[fmt: ArrayFormat = fmt](self, inout writer: Formatter, align: Int):
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType, align: Int):
         var _self = self
 
         @parameter
