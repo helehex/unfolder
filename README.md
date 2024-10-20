@@ -1,12 +1,14 @@
 # unfolder
 Graph crawling automata.
 
+You can find this rule on OEIS: https://oeis.org/A376148
+
 ### The main focus of this repo is walk-union graph update rules:
 - Start with a graph `G`.
 - Pick an origin node `o` in graph `G`.
-- Find all walks which start at node `o`, and repeat exactly one node.
+- Find all walks which start at node `o` and independently repeat exactly one node.
 - Label the nodes for each walk `[old label, substeps to reach]`.
-- Union all walks using the new labels to get the resulting graph `G-o`.
+- Take the temporally sensitive union all walks to get the resulting graph `G-o`.
 
 > Nodes are considered self-edges by default.
 > All edges are considered undirected by default.
