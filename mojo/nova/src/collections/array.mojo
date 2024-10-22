@@ -166,11 +166,11 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         bnd.adjust(slice, self._size)
         return ArrayIter[T, bnd, fmt, __origin_of(self)](self._data, slice)
 
-    # @always_inline
-    # fn __setitem__(inout self, owned slice: Slice, value: ArrayIter[T, _, _, _]):
-    #     var sliced_self = self[slice]
-    #     for idx in range(min(len(sliced_self), len(value))):
-    #         self[idx] = value[idx]
+    @always_inline
+    fn set_slice(inout self, owned slice: Slice, value: ArrayIter[T, _, _, _]):
+        var sliced_self = self[slice]
+        for idx in range(min(len(sliced_self), len(value))):
+            sliced_self[idx] = value[idx]
 
     @always_inline
     fn rebound[bound: SpanBound](owned self) -> Array[T, bound, fmt]:
@@ -544,12 +544,11 @@ struct ArrayIter[
         var size = ceildiv(slice.end.value() - slice.start.value(), slice.step.value())
         return Self(self._src, start, size, step)
 
-    # @always_inline
-    # fn __setitem__(self, owned slice: Slice, value: ArrayIter[T, _, _, _]):
-    #     var sliced_self = self[slice]
-    #     for idx in range(min(len(sliced_self), len(value))):
-    #         var a = value[idx]
-    #         self[idx] = value[idx]
+    @always_inline
+    fn set_slice[_origin: MutableOrigin](self: ArrayIter[T, bnd, fmt, _origin], owned slice: Slice, value: ArrayIter[T, _, _, _]):
+        var sliced_self = self[slice]
+        for idx in range(min(len(sliced_self), len(value))):
+            sliced_self[idx] = value[idx]
 
     # +------( Iterate )------+ #
     #
