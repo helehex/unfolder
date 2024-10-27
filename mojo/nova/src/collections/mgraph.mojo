@@ -124,7 +124,9 @@ struct MGraph(Stringable, Value, Drawable):
         self.write_relations_to(result)
         return result
 
-    fn write_to[WriterType: Writer](self, inout writer: WriterType, str_nodes: Bool = True, str_edges: Bool = True):
+    fn write_to[
+        WriterType: Writer
+    ](self, inout writer: WriterType, str_nodes: Bool = True, str_edges: Bool = True):
         """Format the graph."""
         writer.write("history: ", self.history, "\n")
         writer.write("width: ", self.width, "\n")

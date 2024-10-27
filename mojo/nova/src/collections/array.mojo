@@ -149,9 +149,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     # +------( Subscript )------+ #
     #
     @always_inline
-    fn __getitem__[
-        bnd: SpanBound = bnd
-    ](ref [_]self, owned idx: Int) -> ref [__origin_of(self)] T:
+    fn __getitem__[bnd: SpanBound = bnd](ref [_]self, owned idx: Int) -> ref [__origin_of(self)] T:
         bnd.adjust(idx, self._size)
         return self.unsafe_get(idx)
 
@@ -202,7 +200,9 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         return self[:].write_to[fmt=fmt](writer)
 
     @always_inline
-    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType, align: Int):
+    fn write_to[
+        WriterType: Writer, //, fmt: ArrayFormat = fmt
+    ](self, inout writer: WriterType, align: Int):
         return self[:].write_to[fmt=fmt](writer, align)
 
     @staticmethod
@@ -545,7 +545,9 @@ struct ArrayIter[
         return Self(self._src, start, size, step)
 
     @always_inline
-    fn set_slice[_origin: MutableOrigin](self: ArrayIter[T, bnd, fmt, _origin], owned slice: Slice, value: ArrayIter[T, _, _, _]):
+    fn set_slice[
+        _origin: MutableOrigin
+    ](self: ArrayIter[T, bnd, fmt, _origin], owned slice: Slice, value: ArrayIter[T, _, _, _]):
         var sliced_self = self[slice]
         for idx in range(min(len(sliced_self), len(value))):
             sliced_self[idx] = value[idx]
@@ -599,7 +601,9 @@ struct ArrayIter[
         write_sep[_write, fmt](writer, len(iter))
 
     @always_inline
-    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType, align: Int):
+    fn write_to[
+        WriterType: Writer, //, fmt: ArrayFormat = fmt
+    ](self, inout writer: WriterType, align: Int):
         var iter = self.__iter__()
 
         @parameter

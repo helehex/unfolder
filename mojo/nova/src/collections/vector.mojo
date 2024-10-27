@@ -141,7 +141,9 @@ struct Vector[
         return self[:].write_to[fmt=fmt](writer)
 
     @always_inline
-    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType, align: Int):
+    fn write_to[
+        WriterType: Writer, //, fmt: ArrayFormat = fmt
+    ](self, inout writer: WriterType, align: Int):
         return self[:].write_to[fmt=fmt](writer, align)
 
     # +------( Subscript )------+ #
@@ -626,7 +628,9 @@ struct VectorIter[
         write_sep[_write, fmt](writer, len(self))
 
     @always_inline
-    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType, align: Int):
+    fn write_to[
+        WriterType: Writer, //, fmt: ArrayFormat = fmt
+    ](self, inout writer: WriterType, align: Int):
         var _self = self
 
         @parameter

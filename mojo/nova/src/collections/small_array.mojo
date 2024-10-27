@@ -39,8 +39,8 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
             self.__init__(T())
         else:
             self._data = __mlir_op.`kgen.param.constant`[
-            _type = Self.Data, value = __mlir_attr[`#kgen.unknown : `, Self.Data]
-        ]()
+                _type = Self.Data, value = __mlir_attr[`#kgen.unknown : `, Self.Data]
+            ]()
 
     @always_inline
     fn __init__(inout self, fill: T):
@@ -156,7 +156,9 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
         write_sep[_write, fmt](writer, len(iter))
 
     @always_inline
-    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType, align: Int):
+    fn write_to[
+        WriterType: Writer, //, fmt: ArrayFormat = fmt
+    ](self, inout writer: WriterType, align: Int):
         var iter = self.__iter__()
 
         @parameter

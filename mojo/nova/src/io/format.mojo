@@ -10,7 +10,9 @@
 #
 #
 @always_inline
-fn write_rep[WriterType: Writer, //, WritableType: Writable](inout writer: WriterType, value: WritableType, count: Int):
+fn write_rep[
+    WriterType: Writer, //, WritableType: Writable
+](inout writer: WriterType, value: WritableType, count: Int):
     for _ in range(count):
         writer.write(value)
 
@@ -46,7 +48,9 @@ fn write_sep[WriterType: Writer, //, fmt: ArrayFormat](inout writer: WriterType,
 
 
 @always_inline
-fn write_sep[WriterType: Writer, //, write: fn () capturing -> None, fmt: ArrayFormat](inout writer: WriterType, count: Int):
+fn write_sep[
+    WriterType: Writer, //, write: fn () capturing -> None, fmt: ArrayFormat
+](inout writer: WriterType, count: Int):
     alias sep_color = Color.clear if (
         bool(fmt.item_color) and not fmt.color
     ) else fmt.color  # remove bool()?
@@ -109,7 +113,9 @@ fn write_sep[
 
 
 @always_inline
-fn write_sep[WriterType: Writer, //, fmt: ArrayFormat](inout writer: WriterType, count: Int, align: Int):
+fn write_sep[
+    WriterType: Writer, //, fmt: ArrayFormat
+](inout writer: WriterType, count: Int, align: Int):
     @parameter
     @always_inline
     fn _str():

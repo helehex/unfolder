@@ -38,8 +38,8 @@ struct SmallVector[
             self.__init__(Scalar[type]())
         else:
             self._data = __mlir_op.`kgen.param.constant`[
-            _type = Self.Data, value = __mlir_attr[`#kgen.unknown : `, Self.Data]
-        ]()
+                _type = Self.Data, value = __mlir_attr[`#kgen.unknown : `, Self.Data]
+            ]()
 
     @always_inline
     fn __init__(inout self, fill: Scalar[type] = 0):
@@ -50,9 +50,7 @@ struct SmallVector[
             self.unsafe_set(idx, fill)
 
     @always_inline
-    fn __init__[
-        width: Int = 1
-    ](inout self, *values: SIMD[type, width]):
+    fn __init__[width: Int = 1](inout self, *values: SIMD[type, width]):
         """Creates a new vector with the given values."""
         self.__init__[False]()
 
@@ -120,7 +118,9 @@ struct SmallVector[
         write_sep[_write, fmt](writer, len(iter))
 
     @always_inline
-    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType, align: Int):
+    fn write_to[
+        WriterType: Writer, //, fmt: ArrayFormat = fmt
+    ](self, inout writer: WriterType, align: Int):
         var iter = self.__iter__()
 
         @parameter
