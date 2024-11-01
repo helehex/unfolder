@@ -3,6 +3,8 @@
 # x----------------------------------------------------------------------------------------------x #
 """Nova Testing."""
 
+from nova import Value
+from memory import UnsafePointer
 from builtin._location import __call_location, _SourceLocation
 from testing.testing import _assert_error
 
