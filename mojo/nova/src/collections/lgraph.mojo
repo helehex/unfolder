@@ -176,6 +176,22 @@ struct LGraph(Stringable, Value, Drawable):
     # fn _check_perm_equality(self, other: Self) -> Bool:
     #     original_perm = other.id2lb
 
+    # color refinement isomorphism test
+    # fn cri(self, other: Self) -> Bool:
+    #     var colors = Dict[Freq[Int], Int]()
+
+    fn edge_heuristic(self) -> Freq[Int]:
+        var result = Freq[Int]()
+        for id in range(self.node_count):
+            var xy_ = self.id2xy(id)
+            var _xy = Ind2(0, xy_[1] - 1)
+            var edge_count = 0
+            while self.next_neighbor(xy_, _xy):
+                edge_count += 1
+                _xy[0] += 1
+            result += edge_count
+        return result
+
     fn __eq__(self, other: Self) -> Bool:
         # WIP
         if (
@@ -184,6 +200,9 @@ struct LGraph(Stringable, Value, Drawable):
             or self.max_edge_out != other.max_edge_out
         ):
             return False
+        elif self.edge_heuristic() != other.edge_heuristic():
+            return False
+        # TODO: full color refinement
         return True
 
     fn __ne__(self, other: Self) -> Bool:

@@ -10,7 +10,7 @@ from collections.dict import Dict, DictEntry, _DictEntryIter
 # | Freq
 # +----------------------------------------------------------------------------------------------+ #
 #
-struct Freq[T: StringableKeyElement](Writable, Sized, Boolable, Value):
+struct Freq[T: StringableKeyElement](Writable, Sized, Boolable, Value, Hashable):
     """Frequency."""
 
     # +------< Data >------+ #
@@ -45,6 +45,9 @@ struct Freq[T: StringableKeyElement](Writable, Sized, Boolable, Value):
         else:
             self.discard(key)
 
+    fn __iter__(ref [_]self: Self) -> _DictEntryIter[T, Int, __origin_of(self._data)]:
+        return _DictEntryIter[T, Int, __origin_of(self._data)](0, 0, self._data)
+
     @always_inline
     fn discard(inout self, key: T):
         try:
@@ -62,7 +65,7 @@ struct Freq[T: StringableKeyElement](Writable, Sized, Boolable, Value):
         return self.__str__()
 
     fn write_to[WriterType: Writer](self, inout writer: WriterType):
-        writer.write(str(self.total), "{")
+        writer.write(str(self.total), " {")
         var written = 0
         for item in self:
             writer.write(str(item[].key), ": ", str(item[].value))
@@ -70,9 +73,6 @@ struct Freq[T: StringableKeyElement](Writable, Sized, Boolable, Value):
                 writer.write(", ")
             written += 1
         writer.write("}")
-
-    fn __iter__(ref [_]self: Self) -> _DictEntryIter[T, Int, __origin_of(self._data)]:
-        return _DictEntryIter[T, Int, __origin_of(self._data)](0, 0, self._data)
 
     # +------( Unary )------+ #
     #
@@ -83,6 +83,12 @@ struct Freq[T: StringableKeyElement](Writable, Sized, Boolable, Value):
     @always_inline
     fn __bool__(self) -> Bool:
         return self._data.__bool__()
+
+    fn __hash__(self) -> UInt:
+        var hash_value = 0
+        for e in self:
+            hash_value ^= (hash(e[].key) + e[].value)
+        return hash_value
 
     # +------( Comparison )------+ #
     #
