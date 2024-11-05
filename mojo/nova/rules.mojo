@@ -40,6 +40,43 @@ fn follow[rule: fn (LGraph, Int) -> LGraph](history: Array[Int]) -> LGraph:
 
 
 # +----------------------------------------------------------------------------------------------+ #
+# | Multiway
+# +----------------------------------------------------------------------------------------------+ #
+#
+trait RuleState(EqualityComparable, Defaultable, CollectionElement):
+    fn ways(self) -> Int: ...
+
+
+fn multiway[StateType: RuleState, //, rule: fn (StateType, Int) -> StateType](max_depth: Int) -> Graph:
+    var result = Graph()
+    result.nodes[0] = Ind2(0, 0)
+    var graphs = List[StateType](rule(StateType(), 1))
+    var idx = 0
+
+    @parameter
+    fn add_graph(new_graph: StateType, depth: Int):
+        for graph_idx in range(len(graphs)):
+            if new_graph == graphs[graph_idx]:
+                result.reach(idx, graph_idx, Ind2(graph_idx, depth))
+                return
+        result.reach(idx, len(graphs), Ind2(len(graphs), depth))
+        graphs += new_graph
+
+    for depth in range(1, max_depth):
+        var stop = len(graphs)
+        while idx < stop:
+            for lbl in range(1, graphs[idx].ways() + 1):
+                var new_graph = rule(graphs[idx], lbl)
+                add_graph(new_graph, depth)
+            idx += 1
+
+    return result^
+        
+
+
+
+
+# +----------------------------------------------------------------------------------------------+ #
 # | Unfolder Matrix Graph
 # +----------------------------------------------------------------------------------------------+ #
 #

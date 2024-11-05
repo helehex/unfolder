@@ -100,6 +100,9 @@ struct LGraph(Stringable, Value, Drawable):
     fn id2lb(self, id: Int) -> Int:
         return self._id2lb[id]
 
+    fn ways(self) -> Int:
+        return self.node_count
+
     # +------( Format )------+ #
     #
     fn __str__(self) -> String:
@@ -179,6 +182,7 @@ struct LGraph(Stringable, Value, Drawable):
     # color refinement isomorphism test
     # fn cri(self, other: Self) -> Bool:
     #     var colors = Dict[Freq[Int], Int]()
+    #     var edge_colors = Array[Int]()
 
     fn edge_heuristic(self) -> Freq[Int]:
         var result = Freq[Int]()

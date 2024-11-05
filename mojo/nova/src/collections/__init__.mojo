@@ -12,6 +12,7 @@ from .table import *
 from .freq import *
 from .mgraph import *
 from .lgraph import *
+from .graph import *
 
 from ..io import *
 from sys.intrinsics import _type_is_eq
