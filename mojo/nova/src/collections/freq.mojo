@@ -87,7 +87,7 @@ struct Freq[T: StringableKeyElement](Writable, Sized, Boolable, Value, Hashable)
     fn __hash__(self) -> UInt:
         var hash_value = 0
         for e in self:
-            hash_value ^= (hash(e[].key) + e[].value)
+            hash_value ^= hash(e[].key) + e[].value
         return hash_value
 
     # +------( Comparison )------+ #

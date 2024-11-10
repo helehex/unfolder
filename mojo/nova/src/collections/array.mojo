@@ -569,6 +569,10 @@ struct ArrayIter[
         self.size -= 1
         return result
 
+    @always_inline
+    fn __has_next__(self) -> Bool:
+        return self.__len__() > 0
+
     # +------( Format )------+ #
     #
     @always_inline
@@ -622,10 +626,6 @@ struct ArrayIter[
     @always_inline
     fn __len__(self) -> Int:
         return self.size
-
-    @always_inline
-    fn __hasmore__(self) -> Bool:
-        return self.__len__() > 0
 
     @always_inline
     fn __eq__(self, rhs: Self) -> Bool:

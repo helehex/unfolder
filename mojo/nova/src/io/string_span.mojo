@@ -24,23 +24,23 @@ struct StringSpan[is_mutable: Bool, //, origin: Origin[is_mutable].type](Value, 
     #
     @always_inline
     fn __init__(inout self):
-        self._span = Span[UInt8, origin](unsafe_ptr=UnsafePointer[UInt8](), len=0)
+        self._span = Span[UInt8, origin](ptr=UnsafePointer[UInt8](), length=0)
 
     @always_inline
     fn __init__(inout self, owned unsafe_from_utf8: Span[UInt8, origin]):
         self._span = unsafe_from_utf8^
 
     @always_inline
-    fn __init__(inout self, ptr: UnsafePointer[UInt8], len: Int):
-        self._span = Span[UInt8, origin](unsafe_ptr=ptr, len=len)
+    fn __init__(inout self, ptr: UnsafePointer[UInt8], length: Int):
+        self._span = Span[UInt8, origin](ptr=ptr, length=length)
 
     @always_inline
     fn __init__(inout self, ref [origin]string: String):
-        self._span = Span[UInt8, origin](unsafe_ptr=string.unsafe_ptr(), len=len(string))
+        self._span = Span[UInt8, origin](ptr=string.unsafe_ptr(), length=len(string))
 
     @always_inline
     fn __init__(inout self, ref [origin]string: StringLiteral):
-        self._span = Span[UInt8, origin](unsafe_ptr=string.unsafe_ptr(), len=len(string))
+        self._span = Span[UInt8, origin](ptr=string.unsafe_ptr(), length=len(string))
 
     # +------( Format )------+ #
     #
@@ -142,7 +142,7 @@ struct StringSpan[is_mutable: Bool, //, origin: Origin[is_mutable].type](Value, 
         SpanBound.Lap.adjust(slice, len(self._span))
         var ptr = self._span._data + slice.start.value()
         return Span[UInt8, origin](
-            unsafe_ptr=ptr, len=(slice.end.value() - slice.start.value()) // slice.step.value()
+            ptr=ptr, length=(slice.end.value() - slice.start.value()) // slice.step.value()
         )
 
     @always_inline

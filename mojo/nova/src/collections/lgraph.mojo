@@ -176,13 +176,45 @@ struct LGraph(Stringable, Value, Drawable):
 
     # +------( Operations )------+ #
     #
-    # fn _check_perm_equality(self, other: Self) -> Bool:
-    #     original_perm = other.id2lb
-
     # color refinement isomorphism test
-    # fn cri(self, other: Self) -> Bool:
-    #     var colors = Dict[Freq[Int], Int]()
-    #     var edge_colors = Array[Int]()
+    fn color_heuristic(self) -> Freq[Int]:
+        # TODO: This could be better,
+        # should do color refinement on the disjoint union of two graphs
+        # or at least check how many iterations it went through as well
+
+        var node_colors = Array[Int](size=self.node_count)
+        var new_node_colors = Array[Int](size=self.node_count)
+        var color_map = Dict[Freq[Int], Int]()
+
+        for id in range(self.node_count):
+            var xy_ = self.id2xy(id)
+            var _xy = Ind2(0, xy_[1] - 1)
+            var edge_count = 0
+            while self.next_neighbor(xy_, _xy):
+                edge_count += 1
+                _xy[0] += 1
+            new_node_colors[id] = edge_count
+
+        while node_colors != new_node_colors:
+            node_colors = new_node_colors
+            new_node_colors.clear()
+            color_map.clear()
+            for id in range(self.node_count):
+                var xy_ = self.id2xy(id)
+                var _xy = Ind2(0, xy_[1] - 1)
+                var color_freq = Freq[Int]()
+                while self.next_neighbor(xy_, _xy):
+                    color_freq += node_colors[self.xy2id(_xy)]
+                    _xy[0] += 1
+                if color_freq not in color_map:
+                    color_map[color_freq] = len(color_map)
+                new_node_colors[id] = color_map.find(color_freq).unsafe_value()
+
+        var result = Freq[Int]()
+        for color in new_node_colors:
+            result += color[]
+
+        return result
 
     fn edge_heuristic(self) -> Freq[Int]:
         var result = Freq[Int]()
@@ -206,7 +238,8 @@ struct LGraph(Stringable, Value, Drawable):
             return False
         elif self.edge_heuristic() != other.edge_heuristic():
             return False
-        # TODO: full color refinement
+        elif self.color_heuristic() != other.color_heuristic():
+            return False
         return True
 
     fn __ne__(self, other: Self) -> Bool:

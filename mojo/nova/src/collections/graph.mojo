@@ -1,5 +1,6 @@
 from collections import Set
 
+
 @value
 struct Edge:
     var src: Int
