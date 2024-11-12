@@ -20,7 +20,7 @@ struct Graph:
     var nodes: Dict[Int, Ind2]
     var edges: Set[Edge]
 
-    fn __init__(inout self):
+    fn __init__(out self):
         self.nodes = Dict[Int, Ind2]()
         self.edges = Set[Edge]()
 

@@ -35,7 +35,7 @@ struct Table[
     # +------( Lifecycle )------+ #
     #
     @always_inline
-    fn __init__(inout self):
+    fn __init__(out self):
         """Creates a null array with zero size."""
         self._data = UnsafePointer[T]()
         self._cols, self._rows = 0, 0
@@ -52,13 +52,13 @@ struct Table[
             _init(self._data, size)
 
     @always_inline
-    fn __init__(inout self, cols: Int, rows: Int, *, fill: T):
+    fn __init__(out self, cols: Int, rows: Int, *, fill: T):
         self.__init__[False](cols=cols, rows=rows)
         for idx in range(cols * rows):
             _copy(self._data + idx, fill)
 
     @always_inline
-    fn __init__(inout self, cols: Int, rows: Int, *, rule: fn (Int, Int) -> T):
+    fn __init__(out self, cols: Int, rows: Int, *, rule: fn (Int, Int) -> T):
         self.__init__[False](cols=cols, rows=rows)
         var idx = 0
         for y in range(rows):

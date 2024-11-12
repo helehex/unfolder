@@ -4,7 +4,7 @@
 """Nova Vector."""
 
 from algorithm import vectorize
-from sys import triple_is_nvidia_cuda, simdwidthof, bitwidthof, alignof
+from sys import is_nvidia_gpu, simdwidthof, bitwidthof, alignof
 from ..memory import memclr, memset, memcpy, simd_store, simd_load
 from ..algorithm import vectorize_stoping
 
@@ -36,7 +36,7 @@ struct Vector[
     # +------( Lifecycle )------+ #
     #
     @always_inline
-    fn __init__(inout self):
+    fn __init__(out self):
         """Creates a null vector with zero size."""
         self._data = UnsafePointer[Scalar[type]]()
         self._size = 0
@@ -75,7 +75,7 @@ struct Vector[
         vectorize[_set, width](size)
 
     @always_inline
-    fn __init__(inout self, *values: Vector[type, _, _, _]):
+    fn __init__(out self, *values: Vector[type, _, _, _]):
         """Creates a new vector by joining existing vectors."""
         var size = 0
         for value in values:
@@ -87,7 +87,7 @@ struct Vector[
             data += value[]._size
 
     @always_inline
-    fn __init__(inout self, *values: Vector[type, _, _, _], size: Int):
+    fn __init__(out self, *values: Vector[type, _, _, _], size: Int):
         """Creates a new vector by joining existing vectors."""
         self.__init__[False](size=size)
         var idx = 0
@@ -519,28 +519,28 @@ struct VectorIter[
     # +------( Lifecycle )------+ #
     #
     @always_inline
-    fn __init__(inout self):
+    fn __init__(out self):
         self._src = Self.Pointer()
         self.start = 0
         self.size = 0
         self.step = 1
 
     @always_inline
-    fn __init__(inout self, src: Self.Pointer, owned size: Int):
+    fn __init__(out self, src: Self.Pointer, owned size: Int):
         self._src = src
         self.start = 0
         self.size = size
         self.step = 1
 
     @always_inline
-    fn __init__(inout self, src: Self.Pointer, owned slice: Slice):
+    fn __init__(out self, src: Self.Pointer, owned slice: Slice):
         self._src = src
         self.start = slice.start.value()
         self.size = max(ceildiv(slice.end.value() - self.start, slice.step.value()), 0)
         self.step = slice.step.value()
 
     @always_inline
-    fn __init__(inout self, ref [origin, spc._value.value]src: Vector[type, bnd, fmt, spc]):
+    fn __init__(out self, ref [origin, spc._value.value]src: Vector[type, bnd, fmt, spc]):
         self = VectorIter[type, bnd, fmt, origin, spc](src._data, src._size)
 
     # +------( Subscript )------+ #

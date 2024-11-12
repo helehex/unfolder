@@ -20,7 +20,7 @@ struct Freq[T: StringableKeyElement](Writable, Sized, Boolable, Value, Hashable)
 
     # +------( Lifecycle )------+ #
     #
-    fn __init__(inout self):
+    fn __init__(out self):
         self.total = 0
         self._data = Dict[T, Int]()
 

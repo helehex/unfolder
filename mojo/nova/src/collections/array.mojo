@@ -30,7 +30,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     # +------( Lifecycle )------+ #
     #
     @always_inline
-    fn __init__(inout self):
+    fn __init__(out self):
         """Creates a null array with zero size."""
         self._data = UnsafePointer[T]()
         self._size = 0
@@ -46,19 +46,19 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
             _init(self._data, size)
 
     @always_inline
-    fn __init__(inout self, *items: T):
+    fn __init__(out self, *items: T):
         """Creates a new array with the given items."""
         self.__init__(items)
 
     @always_inline
-    fn __init__(inout self, items: VariadicListMem[T, _]):
+    fn __init__(out self, items: VariadicListMem[T, _]):
         """Creates a new array with the given items."""
         self.__init__[False](size=len(items))
         for idx in range(self._size):
             _copy(self._data + idx, items[idx])
 
     @always_inline
-    fn __init__(inout self, *items: T, size: Int):
+    fn __init__(out self, *items: T, size: Int):
         """Creates a new array with the given items."""
         self.__init__[False](size=size)
         for idx in range(size):
@@ -96,7 +96,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         self = Self(size=size)
 
     # @always_inline
-    # fn __init__(inout self, owned tuple: Tuple):
+    # fn __init__(out self, owned tuple: Tuple):
     #     """Creates a new array with the given tuple of elements."""
     #     _constrain_homo[T, tuple.element_types]()
     #     self._size = len(tuple)
@@ -498,32 +498,32 @@ struct ArrayIter[
     # +------( Lifecycle )------+ #
     #
     @always_inline
-    fn __init__(inout self):
+    fn __init__(out self):
         self._src = UnsafePointer[T]()
         self.start = 0
         self.size = 0
         self.step = 1
 
     @always_inline
-    fn __init__(inout self, src: UnsafePointer[T], owned size: Int):
+    fn __init__(out self, src: UnsafePointer[T], owned size: Int):
         self._src = src
         self.start = 0
         self.size = size
         self.step = 1
 
     @always_inline
-    fn __init__(inout self, src: UnsafePointer[T], owned slice: Slice):
+    fn __init__(out self, src: UnsafePointer[T], owned slice: Slice):
         self._src = src
         self.step = slice.step.or_else(1)
         self.start = slice.start.value()
         self.size = max(ceildiv(slice.end.value() - self.start, self.step), 0)
 
     @always_inline
-    fn __init__(inout self, ref [origin]src: Array[T, bnd, fmt]):
+    fn __init__(out self, ref [origin]src: Array[T, bnd, fmt]):
         self = ArrayIter[T, bnd, fmt, origin](src._data, src._size)
 
     @always_inline
-    fn __init__(inout self, owned other: ArrayIter[T, _, _, origin]):
+    fn __init__(out self, owned other: ArrayIter[T, _, _, origin]):
         self._src = other._src
         self.start = other.start
         self.step = other.step
@@ -711,7 +711,7 @@ struct ArrayFormat:
     var item_color: String
 
     @always_inline
-    fn __init__(inout self):
+    fn __init__(out self):
         self = Self("", "", "", "", "", "")
 
     @always_inline
@@ -757,7 +757,7 @@ struct ArrayFormat:
         self.item_color = item_color
 
     @always_inline
-    fn __init__(inout self, string: StringLiteral):
+    fn __init__(out self, string: StringLiteral):
         var span = str(string)
         self = Self(span)
 

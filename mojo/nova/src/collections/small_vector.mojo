@@ -42,7 +42,7 @@ struct SmallVector[
             ]()
 
     @always_inline
-    fn __init__(inout self, fill: Scalar[type] = 0):
+    fn __init__(out self, fill: Scalar[type] = 0):
         self.__init__[False]()
 
         @parameter

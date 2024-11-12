@@ -43,7 +43,7 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
             ]()
 
     @always_inline
-    fn __init__(inout self, fill: T):
+    fn __init__(out self, fill: T):
         self.__init__[False]()
 
         @parameter
@@ -51,11 +51,11 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
             _copy(self.unsafe_ptr() + idx, fill)
 
     @always_inline
-    fn __init__(inout self, owned *elems: T):
+    fn __init__(out self, owned *elems: T):
         self = Self(storage=elems^)
 
     @always_inline
-    fn __init__(inout self, *, owned storage: VariadicListMem[T, _]):
+    fn __init__(out self, *, owned storage: VariadicListMem[T, _]):
         debug_assert(len(storage) == size, "Elements must be of length size")
         self.__init__[False]()
 

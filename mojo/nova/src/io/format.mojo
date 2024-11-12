@@ -131,35 +131,35 @@ fn write_sep[
 #     var _sep: Int
 #     var _end: Int
 
-#     fn __init__(inout self):
+#     fn __init__(out self):
 #         self._value = String()
 #         self._beg = 0
 #         self._pad = 0
 #         self._sep = 0
 #         self._end = 0
 
-#     fn __init__(inout self, beg: StringSpan[_], end: StringSpan[_]):
+#     fn __init__(out self, beg: StringSpan[_], end: StringSpan[_]):
 #         self._value = String.format_sequence(beg, end)
 #         self._beg = len(beg)
 #         self._pad = self._beg
 #         self._sep = self._pad
 #         self._end = self._sep + len(end)
 
-#     fn __init__(inout self, beg: StringSpan[_], sep: StringSpan[_], end: StringSpan[_]):
+#     fn __init__(out self, beg: StringSpan[_], sep: StringSpan[_], end: StringSpan[_]):
 #         self._value = String.format_sequence(beg, sep, end)
 #         self._beg = len(beg)
 #         self._pad = self._beg
 #         self._sep = self._pad + len(sep)
 #         self._end = self._sep + len(end)
 
-#     fn __init__(inout self, beg: StringSpan[_], pad: StringSpan[_], sep: StringSpan[_], end: StringSpan[_]):
+#     fn __init__(out self, beg: StringSpan[_], pad: StringSpan[_], sep: StringSpan[_], end: StringSpan[_]):
 #         self._value = String.format_sequence(beg, pad, sep, end)
 #         self._beg = len(beg)
 #         self._pad = self._beg + len(pad)
 #         self._sep = self._pad + len(sep)
 #         self._end = self._sep + len(end)
 
-#     fn __init__(inout self, parse: StringSpan[_]):
+#     fn __init__(out self, parse: StringSpan[_]):
 #         var data = List[UInt8](capacity=len(parse))
 #         self._beg = 0
 #         self._pad = 0
@@ -253,24 +253,24 @@ fn write_sep[
 #     var bot: SepFormat
 
 #     @always_inline
-#     fn __init__(inout self, mid: SepFormat):
+#     fn __init__(out self, mid: SepFormat):
 #         self = Self(SepFormat(), SepFormat(), mid, SepFormat())
 
 #     @always_inline
-#     fn __init__(inout self, top: SepFormat, bot: SepFormat):
+#     fn __init__(out self, top: SepFormat, bot: SepFormat):
 #         self = Self(top, SepFormat(), SepFormat(), bot)
 
 #     @always_inline
-#     fn __init__(inout self, top: SepFormat, mid: SepFormat, bot: SepFormat):
+#     fn __init__(out self, top: SepFormat, mid: SepFormat, bot: SepFormat):
 #         self = Self(top, SepFormat(), mid, bot)
 
-#     fn __init__(inout self, top: SepFormat, div: SepFormat, mid: SepFormat, bot: SepFormat):
+#     fn __init__(out self, top: SepFormat, div: SepFormat, mid: SepFormat, bot: SepFormat):
 #         self.top = top
 #         self.div = div
 #         self.mid = mid
 #         self.bot = bot
 
-#     fn __init__(inout self, parse: StringSpan[_]):
+#     fn __init__(out self, parse: StringSpan[_]):
 #         self.top = SepFormat()
 #         self.mid = SepFormat()
 #         self.bot = SepFormat()

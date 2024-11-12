@@ -42,7 +42,7 @@ struct LGraph(Stringable, Value, Drawable):
 
     # +------( Lifecycle )------+ #
     #
-    fn __init__(inout self):
+    fn __init__(out self):
         # --- initialize empty
         self.width = 0
         self.depth = 0
@@ -58,7 +58,7 @@ struct LGraph(Stringable, Value, Drawable):
         self._id2lb = Array[Int, SpanBound.Unsafe]()
         self._lb2id = Array[Int, SpanBound.Unsafe]()
 
-    fn __init__(inout self, width: Int, depth: Int, owned history: Array[Int]):
+    fn __init__(out self, width: Int, depth: Int, owned history: Array[Int]):
         var node_capacity = width * depth
         self.width = width
         self.depth = 0
@@ -335,7 +335,7 @@ struct LGraph(Stringable, Value, Drawable):
 #     var node: Int
 #     var x: Int
 
-#     fn __init__(inout self, ref[origin] graph: LayerGraph, node: Int):
+#     fn __init__(out self, ref[origin] graph: LayerGraph, node: Int):
 #         self.graph = graph
 #         self.node = node
 #         self.x = 0

@@ -50,7 +50,7 @@ struct MGraph(Stringable, Value, Drawable):
 
     # +------( Lifecycle )------+ #
     #
-    fn __init__(inout self):
+    fn __init__(out self):
         self.width = 0
         self.depth = 0
         self.node_count = 0
@@ -66,7 +66,7 @@ struct MGraph(Stringable, Value, Drawable):
         self._id2lb = Array[Int]()
         self._lb2id = Array[Int]()
 
-    fn __init__(inout self, width: Int, depth: Int, owned history: Array[Int]):
+    fn __init__(out self, width: Int, depth: Int, owned history: Array[Int]):
         var node_capacity = width * depth
         self.width = width
         self.depth = depth

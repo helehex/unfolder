@@ -23,23 +23,23 @@ struct StringSpan[is_mutable: Bool, //, origin: Origin[is_mutable].type](Value, 
     # +------( Lifecycle )------+ #
     #
     @always_inline
-    fn __init__(inout self):
+    fn __init__(out self):
         self._span = Span[UInt8, origin](ptr=UnsafePointer[UInt8](), length=0)
 
     @always_inline
-    fn __init__(inout self, owned unsafe_from_utf8: Span[UInt8, origin]):
+    fn __init__(out self, owned unsafe_from_utf8: Span[UInt8, origin]):
         self._span = unsafe_from_utf8^
 
     @always_inline
-    fn __init__(inout self, ptr: UnsafePointer[UInt8], length: Int):
+    fn __init__(out self, ptr: UnsafePointer[UInt8], length: Int):
         self._span = Span[UInt8, origin](ptr=ptr, length=length)
 
     @always_inline
-    fn __init__(inout self, ref [origin]string: String):
+    fn __init__(out self, ref [origin]string: String):
         self._span = Span[UInt8, origin](ptr=string.unsafe_ptr(), length=len(string))
 
     @always_inline
-    fn __init__(inout self, ref [origin]string: StringLiteral):
+    fn __init__(out self, ref [origin]string: StringLiteral):
         self._span = Span[UInt8, origin](ptr=string.unsafe_ptr(), length=len(string))
 
     # +------( Format )------+ #

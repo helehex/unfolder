@@ -12,7 +12,7 @@ from testing.testing import _assert_error
 struct CopyCounter(Value):
     var rc: UnsafePointer[Int]
 
-    fn __init__(inout self):
+    fn __init__(out self):
         self.rc = UnsafePointer[Int].alloc(1)
         self.rc[] = 0
 
