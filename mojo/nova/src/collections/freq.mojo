@@ -24,11 +24,11 @@ struct Freq[T: StringableKeyElement](Writable, Sized, Boolable, Value, Hashable)
         self.total = 0
         self._data = Dict[T, Int]()
 
-    fn __copyinit__(inout self, other: Self):
+    fn __copyinit__(out self, other: Self):
         self.total = other.total
         self._data = other._data
 
-    fn __moveinit__(inout self, owned other: Self):
+    fn __moveinit__(out self, owned other: Self):
         self.total = other.total
         self._data = other._data^
 
@@ -37,7 +37,7 @@ struct Freq[T: StringableKeyElement](Writable, Sized, Boolable, Value, Hashable)
     fn __getitem__(self, key: T) -> Int:
         return self._data.find(key).or_else(0)
 
-    fn __setitem__(inout self, key: T, freq: Int):
+    fn __setitem__(mut self, key: T, freq: Int):
         if freq < 0:
             print("oh no", str(key), freq)
         if freq > 0:
@@ -49,7 +49,7 @@ struct Freq[T: StringableKeyElement](Writable, Sized, Boolable, Value, Hashable)
         return _DictEntryIter[T, Int, __origin_of(self._data)](0, 0, self._data)
 
     @always_inline
-    fn discard(inout self, key: T):
+    fn discard(mut self, key: T):
         try:
             _ = self._data.pop(key)
         except:
@@ -64,7 +64,7 @@ struct Freq[T: StringableKeyElement](Writable, Sized, Boolable, Value, Hashable)
     fn __repr__(self) -> String:
         return self.__str__()
 
-    fn write_to[WriterType: Writer](self, inout writer: WriterType):
+    fn write_to[WriterType: Writer](self, mut writer: WriterType):
         writer.write(str(self.total), " {")
         var written = 0
         for item in self:
@@ -130,15 +130,15 @@ struct Freq[T: StringableKeyElement](Writable, Sized, Boolable, Value, Hashable)
         return result
 
     @always_inline
-    fn __iadd__(inout self, rhs: T):
+    fn __iadd__(mut self, rhs: T):
         self[rhs] += 1
 
     @always_inline
-    fn __iadd__(inout self, rhs: DictEntry[T, Int]):
+    fn __iadd__(mut self, rhs: DictEntry[T, Int]):
         self[rhs.key] += rhs.value
 
     @always_inline
-    fn __iadd__(inout self, rhs: Self):
+    fn __iadd__(mut self, rhs: Self):
         for item in rhs:
             self += item[]
 
@@ -163,20 +163,20 @@ struct Freq[T: StringableKeyElement](Writable, Sized, Boolable, Value, Hashable)
         return result
 
     @always_inline
-    fn __isub__(inout self, rhs: T):
+    fn __isub__(mut self, rhs: T):
         self[rhs] -= 1
 
     @always_inline
-    fn __isub__(inout self, rhs: DictEntry[T, Int]):
+    fn __isub__(mut self, rhs: DictEntry[T, Int]):
         self[rhs.key] -= rhs.value
 
     @always_inline
-    fn __isub__(inout self, rhs: Self):
+    fn __isub__(mut self, rhs: Self):
         for item in rhs:
             self -= item[]
 
     @always_inline
-    fn clear(inout self):
+    fn clear(mut self):
         self.total = 0
         try:
             while True:

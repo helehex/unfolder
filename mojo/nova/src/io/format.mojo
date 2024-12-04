@@ -12,7 +12,7 @@
 @always_inline
 fn write_rep[
     WriterType: Writer, //, WritableType: Writable
-](inout writer: WriterType, value: WritableType, count: Int):
+](mut writer: WriterType, value: WritableType, count: Int):
     for _ in range(count):
         writer.write(value)
 
@@ -25,7 +25,7 @@ fn write_rep[
 @always_inline
 fn write_align[
     WriterType: Writer, //, pad: StringSpan[StaticConstantOrigin], item_color: String = Color.none
-](inout writer: WriterType, span: StringSpan[_], new_len: Int):
+](mut writer: WriterType, span: StringSpan[_], new_len: Int):
     if len(span) > new_len:
         if new_len > 0:
             var es = max(new_len - 1, 0)
@@ -41,7 +41,7 @@ fn write_align[
 #
 #
 @always_inline
-fn write_sep[WriterType: Writer, //, fmt: ArrayFormat](inout writer: WriterType, len: Int):
+fn write_sep[WriterType: Writer, //, fmt: ArrayFormat](mut writer: WriterType, len: Int):
     writer.write(fmt.beg)
     write_rep(writer, fmt.sep, len)
     writer.write(fmt.end)
@@ -50,7 +50,7 @@ fn write_sep[WriterType: Writer, //, fmt: ArrayFormat](inout writer: WriterType,
 @always_inline
 fn write_sep[
     WriterType: Writer, //, write: fn () capturing -> None, fmt: ArrayFormat
-](inout writer: WriterType, count: Int):
+](mut writer: WriterType, count: Int):
     alias sep_color = Color.clear if (
         bool(fmt.item_color) and not fmt.color
     ) else fmt.color  # remove bool()?
@@ -70,7 +70,7 @@ fn write_sep[
 @always_inline
 fn write_sep[
     WriterType: Writer, //, write: fn (Int) capturing -> None, fmt: ArrayFormat
-](inout writer: WriterType, count: Int):
+](mut writer: WriterType, count: Int):
     alias sep_color = Color.clear if (
         bool(fmt.item_color) and not fmt.color
     ) else fmt.color  # remove bool()?
@@ -91,7 +91,7 @@ fn write_sep[
 @always_inline
 fn write_sep[
     WriterType: Writer, //, read: fn () capturing -> String, fmt: ArrayFormat
-](inout writer: WriterType, count: Int, align: Int):
+](mut writer: WriterType, count: Int, align: Int):
     @parameter
     @always_inline
     fn _str():
@@ -103,7 +103,7 @@ fn write_sep[
 @always_inline
 fn write_sep[
     WriterType: Writer, //, read: fn (Int) capturing -> String, fmt: ArrayFormat
-](inout writer: WriterType, count: Int, align: Int):
+](mut writer: WriterType, count: Int, align: Int):
     @parameter
     @always_inline
     fn _str(idx: Int):
@@ -115,7 +115,7 @@ fn write_sep[
 @always_inline
 fn write_sep[
     WriterType: Writer, //, fmt: ArrayFormat
-](inout writer: WriterType, count: Int, align: Int):
+](mut writer: WriterType, count: Int, align: Int):
     @parameter
     @always_inline
     fn _str():
@@ -170,7 +170,7 @@ fn write_sep[
 #         var parse_len = len(parse)
 
 #         @parameter
-#         fn _next_member(inout member: Int) -> Bool:
+#         fn _next_member(mut member: Int) -> Bool:
 #             var char: UInt8
 #             while count < parse_len:
 #                 char = ptr[count]
@@ -211,7 +211,7 @@ fn write_sep[
 #         self._value = data^
 
 #     @always_inline
-#     fn __copyinit__(inout self, other: Self):
+#     fn __copyinit__(out self, other: Self):
 #         self._value = other._value
 #         self._beg = other._beg
 #         self._pad = other._pad
@@ -219,7 +219,7 @@ fn write_sep[
 #         self._end = other._end
 
 #     @always_inline
-#     fn __moveinit__(inout self, owned other: Self):
+#     fn __moveinit__(out self, owned other: Self):
 #         self._value = other._value^
 #         self._beg = other._beg
 #         self._pad = other._pad
@@ -280,7 +280,7 @@ fn write_sep[
 #         var parse_len = len(parse)
 
 #         @parameter
-#         fn _next_member(inout member: SepFormat) -> Bool:
+#         fn _next_member(mut member: SepFormat) -> Bool:
 #             while count < parse_len:
 #                 var char = ptr[count]
 #                 count += 1

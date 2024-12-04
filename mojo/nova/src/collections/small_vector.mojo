@@ -30,7 +30,7 @@ struct SmallVector[
     # +------( Lifecycle )------+ #
     #
     @always_inline
-    fn __init__[clear: Bool = True](inout self):
+    fn __init__[clear: Bool = True](mut self):
         _small_array_construction_checks[size]()
 
         @parameter
@@ -50,7 +50,7 @@ struct SmallVector[
             self.unsafe_set(idx, fill)
 
     @always_inline
-    fn __init__[width: Int = 1](inout self, *values: SIMD[type, width]):
+    fn __init__[width: Int = 1](mut self, *values: SIMD[type, width]):
         """Creates a new vector with the given values."""
         self.__init__[False]()
 
@@ -65,10 +65,10 @@ struct SmallVector[
 
         vectorize[_set, width](size)
 
-    fn __copyinit__(inout self, other: Self):
+    fn __copyinit__(out self, other: Self):
         self._data = other._data
 
-    fn __moveinit__(inout self, owned other: Self):
+    fn __moveinit__(out self, owned other: Self):
         self._data = other._data
 
     # +------( Cast )------+ #
@@ -102,7 +102,7 @@ struct SmallVector[
         return longest
 
     @always_inline
-    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType):
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, mut writer: WriterType):
         @parameter
         if fmt.pad:
             self.write_to[fmt=fmt](writer, self._get_item_align())
@@ -120,7 +120,7 @@ struct SmallVector[
     @always_inline
     fn write_to[
         WriterType: Writer, //, fmt: ArrayFormat = fmt
-    ](self, inout writer: WriterType, align: Int):
+    ](self, mut writer: WriterType, align: Int):
         var iter = self.__iter__()
 
         @parameter
@@ -163,7 +163,7 @@ struct SmallVector[
     @always_inline
     fn __setitem__[
         width: Int = 1, bnd: SpanBound = bnd
-    ](inout self, owned idx: Int, value: SIMD[type, width]):
+    ](mut self, owned idx: Int, value: SIMD[type, width]):
         @parameter
         if width != 1 and bnd != SpanBound.Unsafe:
             if idx + width > size:
@@ -178,7 +178,7 @@ struct SmallVector[
         self.unsafe_set[width](idx, value)
 
     @always_inline
-    fn unsafe_set[width: Int = 1](inout self, idx: Int, value: SIMD[type, width]):
+    fn unsafe_set[width: Int = 1](mut self, idx: Int, value: SIMD[type, width]):
         simd_store[width](self.unsafe_ptr(), idx, value)
 
     @always_inline

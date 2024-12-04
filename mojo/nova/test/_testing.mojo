@@ -16,11 +16,11 @@ struct CopyCounter(Value):
         self.rc = UnsafePointer[Int].alloc(1)
         self.rc[] = 0
 
-    fn __copyinit__(inout self, other: Self):
+    fn __copyinit__(out self, other: Self):
         self.rc = other.rc
         self.rc[] += 1
 
-    fn __moveinit__(inout self, owned other: Self):
+    fn __moveinit__(out self, owned other: Self):
         self.rc = other.rc
 
     fn __del__(owned self):

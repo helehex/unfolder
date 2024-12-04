@@ -41,7 +41,7 @@ struct Table[
         self._cols, self._rows = 0, 0
 
     @always_inline
-    fn __init__[clear: Bool = True](inout self, cols: Int, rows: Int):
+    fn __init__[clear: Bool = True](mut self, cols: Int, rows: Int):
         """Creates a new array and fills it with default values."""
         var size = cols * rows
         self._data = UnsafePointer[T].alloc(size)
@@ -67,7 +67,7 @@ struct Table[
                 idx += 1
 
     @always_inline
-    fn __copyinit__(inout self, other: Self):
+    fn __copyinit__(out self, other: Self):
         if other._data:
             self.__init__[False](other._cols, other._rows)
             _copy(self._data, other._data, self._cols * self._rows)
@@ -75,7 +75,7 @@ struct Table[
             self = Self()
 
     @always_inline
-    fn __moveinit__(inout self, owned other: Self):
+    fn __moveinit__(out self, owned other: Self):
         self._data = other._data
         self._cols = other._cols
         self._rows = other._rows
@@ -175,13 +175,13 @@ struct Table[
         return result
 
     @always_inline
-    fn write_to[WriterType: Writer, //, fmt: TableFormat = fmt](self, inout writer: WriterType):
+    fn write_to[WriterType: Writer, //, fmt: TableFormat = fmt](self, mut writer: WriterType):
         self.write_to[fmt=fmt](writer, self._get_item_align())
 
     @always_inline
     fn write_to[
         WriterType: Writer, //, fmt: TableFormat = fmt
-    ](self, inout writer: WriterType, align: Int):
+    ](self, mut writer: WriterType, align: Int):
         var pad = self._get_tbl_pad[fmt]()
 
         if self._cols <= 0 or self._rows <= 0:
@@ -366,7 +366,7 @@ struct Table[
         return result
 
     @always_inline
-    fn resize(inout self, cols: Int, rows: Int):
+    fn resize(mut self, cols: Int, rows: Int):
         self = self._resize(cols, rows)
 
 
@@ -386,7 +386,7 @@ struct TableFormat:
 
     @always_inline
     fn __init__(
-        inout self,
+        mut self,
         owned lbl: StringLiteral = " ",
         owned lbl_color: StringLiteral = Color.none,
         owned idx_color: StringLiteral = Color.none,
@@ -407,7 +407,7 @@ struct TableFormat:
 
     # @always_inline
     # fn __init__(
-    #     inout self,
+    #     mut self,
     #     owned lbl: Variant[String, StringRef, StringLiteral] = " ",
     #     owned lbl_color: Variant[String, StringRef, StringLiteral] = Color.none,
     #     owned idx_color: Variant[String, StringRef, StringLiteral] = Color.none,
@@ -421,7 +421,7 @@ struct TableFormat:
 
     #     @parameter
     #     @always_inline
-    #     fn _append(inout value: Variant[String, StringRef, StringLiteral]):
+    #     fn _append(mut value: Variant[String, StringRef, StringLiteral]):
     #         if value.isa[String]():
     #             self.value += value.unsafe_get[String]()[]
     #         elif value.isa[StringRef]():
@@ -439,7 +439,7 @@ struct TableFormat:
 
     #     @parameter
     #     @always_inline
-    #     fn _get_ref(inout value: Variant[String, StringRef, StringLiteral]) -> StringRef:
+    #     fn _get_ref(mut value: Variant[String, StringRef, StringLiteral]) -> StringRef:
     #         if value.isa[String]():
     #             var string = value.unsafe_get[String]()[]
     #             count += len(string)

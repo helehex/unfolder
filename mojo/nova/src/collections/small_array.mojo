@@ -31,7 +31,7 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
     # +------( Lifecycle )------+ #
     #
     @always_inline
-    fn __init__[clear: Bool = True](inout self):
+    fn __init__[clear: Bool = True](mut self):
         _small_array_construction_checks[size]()
 
         @parameter
@@ -64,14 +64,14 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
             _move(self.unsafe_ptr() + idx, UnsafePointer.address_of(storage[idx]))
         storage._is_owned = False
 
-    fn __copyinit__(inout self, other: Self):
+    fn __copyinit__(out self, other: Self):
         self.__init__[False]()
 
         @parameter
         for idx in range(size):
             _copy(self.unsafe_ptr() + idx, other.unsafe_ptr() + idx)
 
-    fn __moveinit__(inout self, owned other: Self):
+    fn __moveinit__(out self, owned other: Self):
         self.__init__[False]()
 
         @parameter
@@ -140,7 +140,7 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
         return longest
 
     @always_inline
-    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType):
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, mut writer: WriterType):
         @parameter
         if fmt.pad:
             self.write_to[fmt=fmt](writer, self._get_item_align())
@@ -158,7 +158,7 @@ struct SmallArray[T: Value, size: Int, bnd: SpanBound = SpanBound.Lap, fmt: Arra
     @always_inline
     fn write_to[
         WriterType: Writer, //, fmt: ArrayFormat = fmt
-    ](self, inout writer: WriterType, align: Int):
+    ](self, mut writer: WriterType, align: Int):
         var iter = self.__iter__()
 
         @parameter

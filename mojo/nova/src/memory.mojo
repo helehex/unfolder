@@ -8,7 +8,7 @@ from algorithm import vectorize
 
 
 @always_inline
-fn _init[T: DefaultableValue](dst: UnsafePointer[T], count: Int):
+fn _init[T: DefaultableValue](dst: UnsafePointer[T, *_], count: Int):
     var offset = 0
     while offset < count:
         _move(dst + offset, T())
@@ -16,7 +16,7 @@ fn _init[T: DefaultableValue](dst: UnsafePointer[T], count: Int):
 
 
 @always_inline
-fn _init[own: Bool, T: Value](dst: UnsafePointer[T], src: UnsafePointer[T]):
+fn _init[own: Bool, T: Value](dst: UnsafePointer[T, *_], src: UnsafePointer[T, *_]):
     @parameter
     if own:
         _move(dst, src)
@@ -25,17 +25,17 @@ fn _init[own: Bool, T: Value](dst: UnsafePointer[T], src: UnsafePointer[T]):
 
 
 @always_inline
-fn _copy[T: Copyable](ptr: UnsafePointer[T], value: T):
+fn _copy[T: Copyable](ptr: UnsafePointer[T, *_], value: T):
     __get_address_as_uninit_lvalue(ptr.address) = value
 
 
 @always_inline
-fn _copy[T: Copyable](dst: UnsafePointer[T], src: UnsafePointer[T]):
+fn _copy[T: Copyable](dst: UnsafePointer[T, *_], src: UnsafePointer[T, *_]):
     _copy(dst, src[])
 
 
 @always_inline
-fn _copy[T: Copyable](dst: UnsafePointer[T], src: UnsafePointer[T], count: Int):
+fn _copy[T: Copyable](dst: UnsafePointer[T, *_], src: UnsafePointer[T, *_], count: Int):
     var offset = 0
     while offset < count:
         _copy(dst + offset, src + offset)
@@ -43,7 +43,7 @@ fn _copy[T: Copyable](dst: UnsafePointer[T], src: UnsafePointer[T], count: Int):
 
 
 @always_inline
-fn _copy[T: Value](dst: UnsafePointer[T], owned src: ArrayIter[T, _, _, _]):
+fn _copy[T: Value](dst: UnsafePointer[T, *_], owned src: ArrayIter[T, *_]):
     var offset = 0
     while len(src) > 0:
         _copy(dst + offset, src.__next__()[])
@@ -51,17 +51,17 @@ fn _copy[T: Value](dst: UnsafePointer[T], owned src: ArrayIter[T, _, _, _]):
 
 
 @always_inline
-fn _move[T: Movable](ptr: UnsafePointer[T], owned value: T):
+fn _move[T: Movable](ptr: UnsafePointer[T, *_], owned value: T):
     __get_address_as_uninit_lvalue(ptr.address) = value^
 
 
 @always_inline
-fn _move[T: Movable](dst: UnsafePointer[T], src: UnsafePointer[T]):
+fn _move[T: Movable](dst: UnsafePointer[T, *_], src: UnsafePointer[T, *_]):
     _move(dst, __get_address_as_owned_value(src.address))
 
 
 @always_inline
-fn _move[T: Movable](dst: UnsafePointer[T], src: UnsafePointer[T], count: Int):
+fn _move[T: Movable](dst: UnsafePointer[T, *_], src: UnsafePointer[T, *_], count: Int):
     var offset = 0
     while offset < count:
         _move(dst + offset, src + offset)
@@ -69,17 +69,17 @@ fn _move[T: Movable](dst: UnsafePointer[T], src: UnsafePointer[T], count: Int):
 
 
 @always_inline
-fn _take[T: Movable](ptr: UnsafePointer[T]) -> T:
+fn _take[T: Movable](ptr: UnsafePointer[T, *_]) -> T:
     return __get_address_as_owned_value(ptr.address)
 
 
 @always_inline
-fn _del(ptr: UnsafePointer[_]):
+fn _del(ptr: UnsafePointer[*_]):
     _ = __get_address_as_owned_value(ptr.address)
 
 
 @always_inline
-fn _del(ptr: UnsafePointer[_], count: Int):
+fn _del(ptr: UnsafePointer[*_], count: Int):
     var offset = 0
     while offset < count:
         _del(ptr + offset)
@@ -87,12 +87,12 @@ fn _del(ptr: UnsafePointer[_], count: Int):
 
 
 @always_inline
-fn memclr[type: DType, //](ptr: UnsafePointer[Scalar[type], _], count: Int):
+fn memclr[type: DType, //](ptr: UnsafePointer[Scalar[type], *_], count: Int):
     memset(ptr, 0, count)
 
 
 @always_inline
-fn memset[type: DType, //](ptr: UnsafePointer[Scalar[type], _], value: Scalar[type], count: Int):
+fn memset[type: DType, //](ptr: UnsafePointer[Scalar[type], *_], value: Scalar[type], count: Int):
     @parameter
     fn _set[width: Int](offset: Int):
         simd_store[width](ptr, offset, value)
@@ -103,7 +103,7 @@ fn memset[type: DType, //](ptr: UnsafePointer[Scalar[type], _], value: Scalar[ty
 @always_inline
 fn memcpy[
     type: DType, //
-](dst: UnsafePointer[Scalar[type], _], src: UnsafePointer[Scalar[type], _], count: Int):
+](dst: UnsafePointer[Scalar[type], *_], src: UnsafePointer[Scalar[type], *_], count: Int):
     @parameter
     fn _cpy[width: Int](offset: Int):
         simd_store[width](dst, offset, simd_load[width](src, offset))
@@ -114,7 +114,7 @@ fn memcpy[
 @always_inline
 fn simd_load[
     type: DType, //, width: Int, /, *, alignment: Int = 1
-](ptr: UnsafePointer[Scalar[type], _], offset: Int) -> SIMD[type, width]:
+](ptr: UnsafePointer[Scalar[type], *_], offset: Int) -> SIMD[type, width]:
     @parameter
     if type is DType.bool:
         return __mlir_op.`pop.load`[alignment = alignment.value](
@@ -129,7 +129,7 @@ fn simd_load[
 @always_inline
 fn simd_store[
     type: DType, //, width: Int, /, *, alignment: Int = 1
-](ptr: UnsafePointer[Scalar[type], _], offset: Int, value: SIMD[type, width]):
+](ptr: UnsafePointer[Scalar[type], *_], offset: Int, value: SIMD[type, width]):
     @parameter
     if type is DType.bool:
         __mlir_op.`pop.store`[alignment = alignment.value](

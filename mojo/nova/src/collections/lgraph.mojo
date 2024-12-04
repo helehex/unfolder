@@ -120,7 +120,7 @@ struct LGraph(Stringable, Value, Drawable):
 
     fn write_to[
         WriterType: Writer
-    ](self, inout writer: WriterType, str_nodes: Bool = True, str_edges: Bool = True):
+    ](self, mut writer: WriterType, str_nodes: Bool = True, str_edges: Bool = True):
         """Format the graph."""
         writer.write("history: ", self.history, "\n")
         writer.write("width: ", self.width, "\n")
@@ -136,7 +136,7 @@ struct LGraph(Stringable, Value, Drawable):
         writer.write("id to lb: ", self._id2lb, "\n")
         writer.write("lb to id: ", self._lb2id, "\n")
 
-    fn write_relations_to[WriterType: Writer](self, inout writer: WriterType):
+    fn write_relations_to[WriterType: Writer](self, mut writer: WriterType):
         """Format the graph as a set of relations: {1->2, 2->3, 3->0, ...}."""
         writer.write("{")
         var first = True
@@ -246,7 +246,7 @@ struct LGraph(Stringable, Value, Drawable):
         return not self.__eq__(other)
 
     @always_inline
-    fn touch(inout self, xy: Ind2):
+    fn touch(mut self, xy: Ind2):
         """Creates a new node entry at (x, y)."""
         if self.nodes[xy]:
             self.weights[self.xy2id(xy)] += 1
@@ -254,7 +254,7 @@ struct LGraph(Stringable, Value, Drawable):
             self.unsafe_touch(xy)
 
     @always_inline
-    fn unsafe_touch(inout self, xy: Ind2):
+    fn unsafe_touch(mut self, xy: Ind2):
         """Assumes the node does not exist."""
         self._id2xy[self.node_count] = xy
         self.weights[self.node_count] += 1
@@ -263,7 +263,7 @@ struct LGraph(Stringable, Value, Drawable):
         self.depth = max(self.depth, xy[1] + 1)
 
     @always_inline
-    fn reach(inout self, xy_: Ind2, _x: Int):
+    fn reach(mut self, xy_: Ind2, _x: Int):
         var _xy = Ind2(_x, xy_[1] + 1)
         self.touch(_xy)
         var id_ = self.xy2id(xy_)
@@ -272,7 +272,7 @@ struct LGraph(Stringable, Value, Drawable):
         self.edges[xy_[0], _id][0] += 1
 
     @always_inline
-    fn next_neighbor(self, xy_: Ind2, inout _xy: Ind2) -> Bool:
+    fn next_neighbor(self, xy_: Ind2, mut _xy: Ind2) -> Bool:
         if _xy[1] < xy_[1]:
             while _xy[0] < self.width:
                 if self.edges[_xy[0], self.xy2id(xy_)][0] > 0:
@@ -288,13 +288,13 @@ struct LGraph(Stringable, Value, Drawable):
         return False
 
     @always_inline
-    fn finalize(inout self):
+    fn finalize(mut self):
         """Finalize the generation of this graph."""
         self.shrink()
         self.finalize_edges()
         self.finalize_nodes()
 
-    fn shrink(inout self):
+    fn shrink(mut self):
         """Shrink data structures."""
         self.nodes.resize(self.width, self.depth)
         self.edges.resize(self.width, self.node_count)
@@ -303,7 +303,7 @@ struct LGraph(Stringable, Value, Drawable):
         self._id2lb.resize(self.node_count)
         self._lb2id.resize(self.node_count + 1)
 
-    fn finalize_edges(inout self):
+    fn finalize_edges(mut self):
         """Count edges."""
         for y in range(self.node_count):
             var edge_out = 0
@@ -315,7 +315,7 @@ struct LGraph(Stringable, Value, Drawable):
                     edge_out += 1
             self.max_edge_out = max(edge_out, self.max_edge_out)
 
-    fn finalize_nodes(inout self):
+    fn finalize_nodes(mut self):
         """Label nodes chronologically. Some rules can confuses the node labeling. This helps keep history consitent.
         """
         var l = 0
@@ -343,7 +343,7 @@ struct LGraph(Stringable, Value, Drawable):
 #     fn __len__(self) -> Int:
 #         return self.graph[].width - self.x
 
-#     fn __next__(inout self) -> Int:
+#     fn __next__(mut self) -> Int:
 #         while self.graph[].edges[self.node, self.x][1] > 0:
 #         var result = self.graph[].edges[]
 #         self.x += 1

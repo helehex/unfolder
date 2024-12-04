@@ -31,7 +31,7 @@ struct SpanBound(Equatable):
     # +------( Adjust )------+ #
     #
     @always_inline
-    fn adjust[context: StringLiteral = ""](self, inout idx: Int, size: Int):
+    fn adjust[context: StringLiteral = ""](self, mut idx: Int, size: Int):
         debug_assert(size > 0, "size must be greater than zero")
         if self == Self.Clamp:
             idx = min(max(idx, 0), size - 1)
@@ -43,7 +43,7 @@ struct SpanBound(Equatable):
         debug_assert(0 <= idx < size, "index out of bounds: " + context)
 
     @always_inline
-    fn adjust[context: StringLiteral = ""](self, inout slice: Slice, size: Int):
+    fn adjust[context: StringLiteral = ""](self, mut slice: Slice, size: Int):
         var has_start = bool(slice.start)
         var has_stop = bool(slice.end)
         var step = slice.step.or_else(1)

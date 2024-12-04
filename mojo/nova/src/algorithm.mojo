@@ -4,9 +4,7 @@
 """Nova Algorithm."""
 
 
-fn vectorize_raising[
-    func: fn[width: Int] (Int) raises capturing -> None, width: Int
-](count: Int) raises:
+fn vectorize_raising[func: fn[width: Int] (Int) raises capturing -> None, width: Int](count: Int) raises:
     var offset = 0
     var end = width
     while offset < count:

@@ -126,7 +126,7 @@ struct MGraph(Stringable, Value, Drawable):
 
     fn write_to[
         WriterType: Writer
-    ](self, inout writer: WriterType, str_nodes: Bool = True, str_edges: Bool = True):
+    ](self, mut writer: WriterType, str_nodes: Bool = True, str_edges: Bool = True):
         """Format the graph."""
         writer.write("history: ", self.history, "\n")
         writer.write("width: ", self.width, "\n")
@@ -143,7 +143,7 @@ struct MGraph(Stringable, Value, Drawable):
         writer.write("id to lb: ", self._id2lb, "\n")
         writer.write("lb to id: ", self._lb2id, "\n")
 
-    fn write_relations_to[WriterType: Writer](self, inout writer: WriterType):
+    fn write_relations_to[WriterType: Writer](self, mut writer: WriterType):
         """Format the graph as a set of relations: {1->2, 2->3, 3->0, ...}."""
         writer.write("{")
         var first = True
@@ -200,7 +200,7 @@ struct MGraph(Stringable, Value, Drawable):
         return not self.__eq__(other)
 
     @always_inline
-    fn touch(inout self, xy: Ind2):
+    fn touch(mut self, xy: Ind2):
         """Creates a new node entry at (x, y)."""
         if self.nodes[xy]:
             self.weights[self.xy2id(xy)] += 1
@@ -208,7 +208,7 @@ struct MGraph(Stringable, Value, Drawable):
             self.unsafe_touch(xy)
 
     @always_inline
-    fn unsafe_touch(inout self, xy: Ind2):
+    fn unsafe_touch(mut self, xy: Ind2):
         """Assumes the node does not exist."""
         self._id2xy[self.node_count] = xy
         self.weights[self.node_count] += 1
@@ -216,7 +216,7 @@ struct MGraph(Stringable, Value, Drawable):
         self.nodes[xy] = self.node_count
 
     @always_inline
-    fn reach(inout self, src: Int, dst: Int, depth: Int):
+    fn reach(mut self, src: Int, dst: Int, depth: Int):
         """Creates an edge from the src node to the dst node. Touches the dst node if it has not been touched yet.
         """
         var src_xy = Ind2(src, depth - 1)
@@ -232,7 +232,7 @@ struct MGraph(Stringable, Value, Drawable):
         self.edges[Ind2(i_, _i)] += 1
 
     @always_inline
-    fn next_neighbor(self, id_: Int, inout _id: Int) -> Bool:
+    fn next_neighbor(self, id_: Int, mut _id: Int) -> Bool:
         while _id < self.bounds[id_][1]:
             if self.edges[_id, id_]:
                 return True
@@ -240,13 +240,13 @@ struct MGraph(Stringable, Value, Drawable):
         return False
 
     @always_inline
-    fn finalize(inout self):
+    fn finalize(mut self):
         """Finalize the generation of this graph."""
         self.shrink()
         self.finalize_edges()
         self.finalize_nodes()
 
-    fn shrink(inout self):
+    fn shrink(mut self):
         """Shrink data structures."""
         self.nodes.resize(self.width, self.depth)
         self.edges.resize(self.node_count, self.node_count)
@@ -256,7 +256,7 @@ struct MGraph(Stringable, Value, Drawable):
         self._id2lb.resize(self.node_count)
         self._lb2id.resize(self.node_count + 1)
 
-    fn finalize_edges(inout self):
+    fn finalize_edges(mut self):
         """Find the first and last edge for each nodes edge row, and count edges."""
         for y in range(self.node_count):
             var row = self.edges.row(y)
@@ -274,7 +274,7 @@ struct MGraph(Stringable, Value, Drawable):
             self.max_edge_out = max(edge_out, self.max_edge_out)
             self.bounds[y] = Ind2(start, limit + 1)
 
-    fn finalize_nodes(inout self):
+    fn finalize_nodes(mut self):
         """Label nodes chronologically. Some rules can confuses the node labeling. This helps keep history consitent.
         """
         var l = 0

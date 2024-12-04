@@ -24,11 +24,11 @@ struct Graph:
         self.nodes = Dict[Int, Ind2]()
         self.edges = Set[Edge]()
 
-    fn __moveinit__(inout self, owned other: Self):
+    fn __moveinit__(out self, owned other: Self):
         self.nodes = other.nodes^
         self.edges = other.edges^
 
-    fn reach(inout self, src: Int, dst: Int, dst_xy: Ind2):
+    fn reach(mut self, src: Int, dst: Int, dst_xy: Ind2):
         self.nodes[dst] = dst_xy
         self.edges.add(Edge(src, dst))
 

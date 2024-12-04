@@ -28,16 +28,18 @@ struct StringSpan[is_mutable: Bool, //, origin: Origin[is_mutable].type](Value, 
 
     @always_inline
     fn __init__(out self, owned unsafe_from_utf8: Span[UInt8, origin]):
-        self._span = unsafe_from_utf8^
+        self._span = unsafe_from_utf8
 
     @always_inline
     fn __init__(out self, ptr: UnsafePointer[UInt8], length: Int):
         self._span = Span[UInt8, origin](ptr=ptr, length=length)
 
+    @implicit
     @always_inline
     fn __init__(out self, ref [origin]string: String):
         self._span = Span[UInt8, origin](ptr=string.unsafe_ptr(), length=len(string))
 
+    @implicit
     @always_inline
     fn __init__(out self, ref [origin]string: StringLiteral):
         self._span = Span[UInt8, origin](ptr=string.unsafe_ptr(), length=len(string))
@@ -49,7 +51,7 @@ struct StringSpan[is_mutable: Bool, //, origin: Origin[is_mutable].type](Value, 
         return String.write(self)
 
     @no_inline
-    fn write_to[WriterType: Writer](self, inout writer: WriterType):
+    fn write_to[WriterType: Writer](self, mut writer: WriterType):
         writer.write_bytes(self.as_bytes_slice())
 
     # +------( Operations )------+ #
@@ -171,7 +173,7 @@ struct StringSpan[is_mutable: Bool, //, origin: Origin[is_mutable].type](Value, 
 #
 fn _split[
     origin: ImmutableOrigin, //, stop_condition: fn () capturing -> Bool
-](sep: String, inout result: List[StringSpan[origin]], inout remaining: StringSpan[origin]):
+](sep: String, mut result: List[StringSpan[origin]], mut remaining: StringSpan[origin]):
     var current = StringSpan[origin](remaining._span._data, 0)
 
     while True:

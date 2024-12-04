@@ -42,7 +42,7 @@ struct Vector[
         self._size = 0
 
     @always_inline
-    fn __init__[clear: Bool = True](inout self, *, size: Int):
+    fn __init__[clear: Bool = True](mut self, *, size: Int):
         """Creates a new vector and fills it with zero."""
         self._data = UnsafePointer[Scalar[type]].alloc(size)
         self._size = size
@@ -52,14 +52,14 @@ struct Vector[
             self.clear()
 
     @always_inline
-    fn __init__[width: Int = 1](inout self, *values: SIMD[type, width]):
+    fn __init__[width: Int = 1](mut self, *values: SIMD[type, width]):
         """Creates a new vector with the given values."""
         self.__init__[False](size=len(values) * width)
         for idx in range(len(values)):
             self.unsafe_set[width](idx * width, values[idx])
 
     @always_inline
-    fn __init__[width: Int = 1](inout self, *values: SIMD[type, width], size: Int):
+    fn __init__[width: Int = 1](mut self, *values: SIMD[type, width], size: Int):
         """Creates a new vector with the given values."""
         self.__init__[False](size=size)
 
@@ -99,12 +99,12 @@ struct Vector[
                     return
 
     @always_inline
-    fn __copyinit__(inout self, other: Self):
+    fn __copyinit__(out self, other: Self):
         """Copy the data from another vector into this one."""
         self = Self(other) if other._data else Self()
 
     @always_inline
-    fn __moveinit__(inout self, owned other: Self):
+    fn __moveinit__(out self, owned other: Self):
         """Move the data from another vector into this one."""
         self._data = other._data
         self._size = other._size
@@ -137,13 +137,13 @@ struct Vector[
         return self[:].__str__[fmt]()
 
     @always_inline
-    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType):
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, mut writer: WriterType):
         return self[:].write_to[fmt=fmt](writer)
 
     @always_inline
     fn write_to[
         WriterType: Writer, //, fmt: ArrayFormat = fmt
-    ](self, inout writer: WriterType, align: Int):
+    ](self, mut writer: WriterType, align: Int):
         return self[:].write_to[fmt=fmt](writer, align)
 
     # +------( Subscript )------+ #
@@ -171,7 +171,7 @@ struct Vector[
     @always_inline
     fn __setitem__[
         width: Int = 1, bnd: SpanBound = bnd
-    ](inout self, owned idx: Int, value: SIMD[type, width]):
+    ](mut self, owned idx: Int, value: SIMD[type, width]):
         @parameter
         if width != 1 and bnd != SpanBound.Unsafe:
             if idx + width > self._size:
@@ -186,7 +186,7 @@ struct Vector[
         self.unsafe_set[width](idx, value)
 
     @always_inline
-    fn unsafe_set[width: Int = 1](inout self, idx: Int, value: SIMD[type, width]):
+    fn unsafe_set[width: Int = 1](mut self, idx: Int, value: SIMD[type, width]):
         simd_store[width](self._data, idx, value)
 
     @always_inline
@@ -197,7 +197,7 @@ struct Vector[
         return VectorIter[type, bnd, fmt, __origin_of(self), spc](self._data, slice)
 
     @always_inline
-    fn __setitem__(inout self, owned slice: Slice, value: VectorIter[type, _, _, _, _]):
+    fn __setitem__(mut self, owned slice: Slice, value: VectorIter[type, _, _, _, _]):
         var sliced_self = self[slice]
         for idx in range(min(len(sliced_self), len(value))):
             self[idx] = value[idx]
@@ -308,7 +308,7 @@ struct Vector[
     @always_inline
     fn _binary_iop[
         func: fn (a: SIMD[type, _], b: SIMD[type, a.size]) -> SIMD[a.type, a.size]
-    ](inout self, rhs: Vector[type, _, _, _]):
+    ](mut self, rhs: Vector[type, _, _, _]):
         debug_assert(len(self) == len(rhs), "size must be equal")
 
         @parameter
@@ -323,7 +323,7 @@ struct Vector[
     @always_inline
     fn _binary_iop[
         func: fn (a: SIMD[type, _], b: SIMD[type, a.size]) -> SIMD[a.type, a.size]
-    ](inout self, rhs: Scalar[type]):
+    ](mut self, rhs: Scalar[type]):
         debug_assert(len(self) == len(rhs), "size must be equal")
 
         @parameter
@@ -456,27 +456,27 @@ struct Vector[
         return self._binary_op[type, SIMD[type, _].__or__](rhs)
 
     @always_inline
-    fn __iadd__(inout self, rhs: Vector[type, _, _, _]):
+    fn __iadd__(mut self, rhs: Vector[type, _, _, _]):
         self._binary_iop[SIMD[type, _].__add__](rhs)
 
     @always_inline
-    fn __iadd__(inout self, rhs: Scalar[type]):
+    fn __iadd__(mut self, rhs: Scalar[type]):
         self._binary_iop[SIMD[type, _].__add__](rhs)
 
     @always_inline
-    fn __isub__(inout self, rhs: Vector[type, _, _, _]):
+    fn __isub__(mut self, rhs: Vector[type, _, _, _]):
         self._binary_iop[SIMD[type, _].__sub__](rhs)
 
     @always_inline
-    fn __isub__(inout self, rhs: Scalar[type]):
+    fn __isub__(mut self, rhs: Scalar[type]):
         self._binary_iop[SIMD[type, _].__sub__](rhs)
 
     @always_inline
-    fn __iand__(inout self, rhs: Vector[type, _, _, _]):
+    fn __iand__(mut self, rhs: Vector[type, _, _, _]):
         self._binary_iop[SIMD[type, _].__and__](rhs)
 
     @always_inline
-    fn __ior__(inout self, rhs: Scalar[type]):
+    fn __ior__(mut self, rhs: Scalar[type]):
         self._binary_iop[SIMD[type, _].__or__](rhs)
 
 
@@ -539,6 +539,7 @@ struct VectorIter[
         self.size = max(ceildiv(slice.end.value() - self.start, slice.step.value()), 0)
         self.step = slice.step.value()
 
+    @implicit
     @always_inline
     fn __init__(out self, ref [origin, spc._value.value]src: Vector[type, bnd, fmt, spc]):
         self = VectorIter[type, bnd, fmt, origin, spc](src._data, src._size)
@@ -590,7 +591,7 @@ struct VectorIter[
         return Self(self._src, self.start + (self.size - 1) * self.step, self.size, -self.step)
 
     @always_inline
-    fn __next__(inout self) -> Pointer[Scalar[type], origin]:
+    fn __next__(mut self) -> Pointer[Scalar[type], origin]:
         var result = Pointer[Scalar[type], origin].address_of(self._src[self.start])
         self.start += self.step
         self.size -= 1
@@ -616,7 +617,7 @@ struct VectorIter[
         return longest
 
     @always_inline
-    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType):
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, mut writer: WriterType):
         @parameter
         if fmt.pad:
             self.write_to[fmt=fmt](writer, self._get_item_align())
@@ -634,7 +635,7 @@ struct VectorIter[
     @always_inline
     fn write_to[
         WriterType: Writer, //, fmt: ArrayFormat = fmt
-    ](self, inout writer: WriterType, align: Int):
+    ](self, mut writer: WriterType, align: Int):
         var _self = self
 
         @parameter

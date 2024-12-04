@@ -36,7 +36,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         self._size = 0
 
     @always_inline
-    fn __init__[clear: Bool = True](inout self, *, size: Int):
+    fn __init__[clear: Bool = True](out self, *, size: Int):
         """Creates a new array and fills it with default values."""
         self._data = UnsafePointer[T].alloc(size)
         self._size = size
@@ -45,11 +45,13 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         if clear:
             _init(self._data, size)
 
+    @implicit
     @always_inline
     fn __init__(out self, *items: T):
         """Creates a new array with the given items."""
         self.__init__(items)
 
+    @implicit
     @always_inline
     fn __init__(out self, items: VariadicListMem[T, _]):
         """Creates a new array with the given items."""
@@ -65,7 +67,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
             _copy(self._data + idx, items[idx % len(items)])
 
     @always_inline
-    fn __init__[__: None = None](inout self, *arrays: Array[T, _, _]):
+    fn __init__[__: None = None](out self, *arrays: Array[T, _, _]):
         """Creates a new array by joining existing arrays."""
         var size = 0
         for array in arrays:
@@ -77,7 +79,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
             dst += len(array[])
 
     @always_inline
-    fn __init__[__: None = None](inout self, *arrays: Array[T, _, _], size: Int):
+    fn __init__[__: None = None](out self, *arrays: Array[T, _, _], size: Int):
         """Creates a new array by joining existing arrays."""
         self.__init__[False](size=size)
         var idx = 0
@@ -110,7 +112,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     #     __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(tuple))
 
     @always_inline
-    fn __init__[__: None = None](inout self, other: ArrayIter[T, _, _, _]):
+    fn __init__[__: None = None](out self, other: ArrayIter[T, _, _, _]):
         """Copy the data from an array iterator into this one."""
         self.__init__[False](size=len(other))
         _copy(self._data, other)
@@ -118,14 +120,14 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     # # for converting an array to a different bound/format.
     # # conflicts with other initializers. maybe use copyinit/moveinit instead?
     # @always_inline
-    # fn __init__[__: None = None](inout self, owned other: Array[T, _, _]):
+    # fn __init__[__: None = None](mut self, owned other: Array[T, _, _]):
     #     """Creates a null array with zero size."""
     #     self._data = other._data
     #     self._size = other._size
     #     __mlir_op.`lit.ownership.mark_destroyed`(__get_mvalue_as_litref(other))
 
     @always_inline
-    fn __copyinit__(inout self, other: Self):
+    fn __copyinit__(out self, other: Self):
         """Copy an existing array into the new array."""
         if other._data:
             self.__init__[False](size=len(other))
@@ -134,7 +136,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
             self = Self()
 
     @always_inline
-    fn __moveinit__(inout self, owned other: Self):
+    fn __moveinit__(out self, owned other: Self):
         """Move an existing array into the new array."""
         self._data = other._data
         self._size = other._size
@@ -165,7 +167,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         return ArrayIter[T, bnd, fmt, __origin_of(self)](self._data, slice)
 
     @always_inline
-    fn set_slice(inout self, owned slice: Slice, value: ArrayIter[T, _, _, _]):
+    fn set_slice(mut self, owned slice: Slice, value: ArrayIter[T, _, _, _]):
         var sliced_self = self[slice]
         for idx in range(min(len(sliced_self), len(value))):
             sliced_self[idx] = value[idx]
@@ -196,13 +198,13 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         return self[:].__str__[fmt]()
 
     @always_inline
-    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType):
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, mut writer: WriterType):
         return self[:].write_to[fmt=fmt](writer)
 
     @always_inline
     fn write_to[
         WriterType: Writer, //, fmt: ArrayFormat = fmt
-    ](self, inout writer: WriterType, align: Int):
+    ](self, mut writer: WriterType, align: Int):
         return self[:].write_to[fmt=fmt](writer, align)
 
     @staticmethod
@@ -272,15 +274,15 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         return Self(self, size=len(self) * rhs)
 
     @always_inline
-    fn __iadd__(inout self, rhs: ArrayIter[T, _, _, _]):
+    fn __iadd__(mut self, rhs: ArrayIter[T, _, _, _]):
         self.append(rhs)
 
     @always_inline
-    fn __iadd__(inout self, rhs: T):
+    fn __iadd__(mut self, rhs: T):
         self.append(rhs)
 
     @always_inline
-    fn __imul__(inout self, rhs: Int):
+    fn __imul__(mut self, rhs: Int):
         self = self * rhs
 
     # +------( Append )------+ #
@@ -302,7 +304,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         return new_array
 
     @always_inline
-    fn append(inout self, item: T):
+    fn append(mut self, item: T):
         var new_array: Self
         new_array.__init__[False](size=len(self) + 1)
         _move(new_array._data, self._data, len(self))
@@ -312,7 +314,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         self = new_array
 
     @always_inline
-    fn append(inout self, items: ArrayIter[T, _, _, _]):
+    fn append(mut self, items: ArrayIter[T, _, _, _]):
         var new_array: Self
         new_array.__init__[False](size=len(self) + len(items))
         _move(new_array._data, self._data, len(self))
@@ -344,7 +346,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         return new_array
 
     @always_inline
-    fn insert(inout self, owned idx: Int, item: T):
+    fn insert(mut self, owned idx: Int, item: T):
         bnd.adjust(idx, len(self))
         var new_array: Self
         new_array.__init__[False](size=len(self) + 1)
@@ -356,7 +358,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         self = new_array
 
     @always_inline
-    fn insert(inout self, owned idx: Int, items: ArrayIter[T, _, _, _]):
+    fn insert(mut self, owned idx: Int, items: ArrayIter[T, _, _, _]):
         bnd.adjust(idx, len(self))
         var new_array: Self
         new_array.__init__[False](size=len(self) + len(items))
@@ -370,7 +372,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     # +------( Remove )------+ #
     #
     @always_inline
-    fn remove(inout self, value: T):
+    fn remove(mut self, value: T):
         try:
             _ = self.pop(self.index(value))
         except:
@@ -398,7 +400,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         return new_array
 
     @always_inline
-    fn unsafe_shrink(inout self, size: Int):
+    fn unsafe_shrink(mut self, size: Int):
         _del(self._data + size, self._size - size)
         self._size = size
 
@@ -411,7 +413,7 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         return new_array
 
     @always_inline
-    fn unsafe_expand(inout self, size: Int):
+    fn unsafe_expand(mut self, size: Int):
         var new_array: Self
         new_array.__init__[False](size=size)
         _move(new_array._data, self._data, self._size)
@@ -425,31 +427,31 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
         return self.unsafe_expanded(size) if size > self._size else self.unsafe_shrinked(size)
 
     @always_inline
-    fn resize(inout self, size: Int):
+    fn resize(mut self, size: Int):
         self.unsafe_expand(size) if size > self._size else self.unsafe_shrink(size)
 
     # +------( Pop )------+ #
     #
     @always_inline
-    fn unsafe_pop(inout self) -> T:
+    fn unsafe_pop(mut self) -> T:
         self._size -= 1
         return _take(self._data + len(self))
 
     @always_inline
-    fn unsafe_pop(inout self, idx: Int) -> T:
+    fn unsafe_pop(mut self, idx: Int) -> T:
         self._size -= 1
         var result = _take(self._data + idx)
         _move(self._data + idx, self._data + idx + 1, self._size - idx)
         return result
 
     @always_inline
-    fn pop(inout self) -> T:
+    fn pop(mut self) -> T:
         if len(self) == 0:
             return T()
         return self.unsafe_pop()
 
     @always_inline
-    fn pop[bnd: SpanBound = bnd](inout self, owned idx: Int) -> T:
+    fn pop[bnd: SpanBound = bnd](mut self, owned idx: Int) -> T:
         if len(self) == 0:
             return T()
         bnd.adjust(idx, len(self))
@@ -458,11 +460,11 @@ struct Array[T: Value, bnd: SpanBound = SpanBound.Lap, fmt: ArrayFormat = "[, ]"
     # +------( Fill )------+ #
     #
     @always_inline
-    fn fill(inout self, owned value: T):
+    fn fill(mut self, owned value: T):
         self[:].fill(value)
 
     @always_inline
-    fn clear(inout self):
+    fn clear(mut self):
         self[:].clear()
 
 
@@ -518,6 +520,7 @@ struct ArrayIter[
         self.start = slice.start.value()
         self.size = max(ceildiv(slice.end.value() - self.start, self.step), 0)
 
+    @implicit
     @always_inline
     fn __init__(out self, ref [origin]src: Array[T, bnd, fmt]):
         self = ArrayIter[T, bnd, fmt, origin](src._data, src._size)
@@ -563,7 +566,7 @@ struct ArrayIter[
         return Self(self._src, self.start + (self.size - 1) * self.step, self.size, -self.step)
 
     @always_inline
-    fn __next__(inout self) -> Pointer[T, origin]:
+    fn __next__(mut self) -> Pointer[T, origin]:
         var result = Pointer[T, origin].address_of(self._src[self.start])
         self.start += self.step
         self.size -= 1
@@ -589,7 +592,7 @@ struct ArrayIter[
         return longest
 
     @always_inline
-    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, inout writer: WriterType):
+    fn write_to[WriterType: Writer, //, fmt: ArrayFormat = fmt](self, mut writer: WriterType):
         @parameter
         if fmt.pad:
             self.write_to[fmt=fmt](writer, self._get_item_align())
@@ -607,7 +610,7 @@ struct ArrayIter[
     @always_inline
     fn write_to[
         WriterType: Writer, //, fmt: ArrayFormat = fmt
-    ](self, inout writer: WriterType, align: Int):
+    ](self, mut writer: WriterType, align: Int):
         var iter = self.__iter__()
 
         @parameter
@@ -716,7 +719,7 @@ struct ArrayFormat:
 
     @always_inline
     fn __init__(
-        inout self,
+        mut self,
         owned beg: String,
         owned end: String,
         /,
@@ -728,7 +731,7 @@ struct ArrayFormat:
 
     @always_inline
     fn __init__(
-        inout self,
+        mut self,
         owned beg: String,
         owned sep: String,
         owned end: String,
@@ -741,7 +744,7 @@ struct ArrayFormat:
 
     @always_inline
     fn __init__(
-        inout self,
+        mut self,
         owned beg: String,
         owned pad: String,
         owned sep: String,
@@ -762,7 +765,7 @@ struct ArrayFormat:
         self = Self(span)
 
     @always_inline
-    fn __init__[lif: ImmutableOrigin](inout self, parse: StringSpan[lif]):
+    fn __init__[lif: ImmutableOrigin](mut self, parse: StringSpan[lif]):
         var p = parse.split("\\", 6)
         if len(p) == 0:
             self = Self()

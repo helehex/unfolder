@@ -231,10 +231,10 @@ def test_length():
 def test_truthy():
     assert_false(Array[Int]().__bool__())
     assert_false(Array[Array[Int]]().__bool__())
-    assert_true(Array[Int](0).__bool__())
-    assert_true(Array[Array[Int]](0).__bool__())
-    assert_true(Array[Int](1, 2).__bool__())
-    assert_true(Array[Array[Int]](1, 2).__bool__())
+    assert_true(Array(0).__bool__())
+    assert_true(Array(Array(0)).__bool__())
+    assert_true(Array(1, 2).__bool__())
+    assert_true(Array(Array(1), Array(2)).__bool__())
 
 
 def test_add():
