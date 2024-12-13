@@ -478,7 +478,7 @@ struct ArrayIter[
     T: Value,
     bnd: SpanBound,
     fmt: ArrayFormat,
-    origin: Origin[mutability].type,
+    origin: Origin[mutability],
 ](Writable, Sized, Value):
     """Span for Array.
 
@@ -759,6 +759,7 @@ struct ArrayFormat:
         self.color = color
         self.item_color = item_color
 
+    @implicit
     @always_inline
     fn __init__(out self, string: StringLiteral):
         var span = str(string)

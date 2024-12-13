@@ -119,7 +119,7 @@ struct Vector[
     #
     @always_inline
     fn cast[target_type: DType](self) -> Vector[target_type, bnd, fmt, spc]:
-        var result: Vector[target_type, bnd, fmt]
+        var result: Vector[target_type, bnd, fmt, spc]
         result.__init__[False]()
 
         @parameter
@@ -350,7 +350,7 @@ struct Vector[
         return not self.all_eq(rhs)
 
     @always_inline
-    fn _eq(self, rhs: Vector[type, _, _, _]) -> Vector[DType.bool]:
+    fn _eq(self, rhs: Vector[type, _, _, _]) -> Vector[DType.bool, bnd, fmt, spc]:
         return self._binary_op[DType.bool, SIMD[type, _].__eq__](rhs)
 
     @always_inline
@@ -491,7 +491,7 @@ struct VectorIter[
     type: DType,
     bnd: SpanBound,
     fmt: ArrayFormat,
-    origin: Origin[mutability].type,
+    origin: Origin[mutability],
     spc: AddressSpace = AddressSpace.GENERIC,
 ](Writable, Sized, Value):
     """Span for Array.

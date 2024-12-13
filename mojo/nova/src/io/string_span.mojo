@@ -3,8 +3,8 @@
 # x----------------------------------------------------------------------------------------------x #
 """Nova StringSpan."""
 
-from memory import UnsafePointer, memcpy
-from utils import Span, StringRef
+from memory import UnsafePointer, memcpy, Span
+from utils import StringRef
 
 
 # +----------------------------------------------------------------------------------------------+ #
@@ -13,7 +13,7 @@ from utils import Span, StringRef
 #
 #
 @value
-struct StringSpan[is_mutable: Bool, //, origin: Origin[is_mutable].type](Value, Writable):
+struct StringSpan[is_mutable: Bool, //, origin: Origin[is_mutable]](Value, Writable):
     """String Span."""
 
     # +------< Data >------+ #
@@ -143,7 +143,7 @@ struct StringSpan[is_mutable: Bool, //, origin: Origin[is_mutable].type](Value, 
     fn __getitem__(self, owned slice: Slice) -> Self:
         SpanBound.Lap.adjust(slice, len(self._span))
         var ptr = self._span._data + slice.start.value()
-        return Span[UInt8, origin](
+        return StringSpan[origin](
             ptr=ptr, length=(slice.end.value() - slice.start.value()) // slice.step.value()
         )
 
